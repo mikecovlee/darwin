@@ -2,10 +2,15 @@
 #include <array>
 #include <string>
 #include <iosfwd>
+#include <memory>
 #include <typeinfo>
 #include <typeindex>
 namespace darwin
 {
+    enum class status
+    {
+        null,ready,leisure,error
+    };
     enum class results
     {
         null,success,failure
@@ -30,7 +35,7 @@ namespace darwin
         public:
         pixel()=default;
         pixel(const pixel&)=default;
-        pixel(char c,const std::array<bool,2>& a,const std::array<colors,2>& c):mChar(c),mAttris(a),mColors(c){}
+        pixel(char ch,const std::array<bool,2>& a,const std::array<colors,2>& c):mChar(ch),mAttris(a),mColors(c){}
         ~pixel()=default;
         void set_char(char c)
         {
@@ -48,7 +53,7 @@ namespace darwin
         {
             return mColors[0];
         }
-        void set_back_color(color c)
+        void set_back_color(colors c)
         {
             mColors[1]=c;
         }
@@ -88,7 +93,7 @@ namespace darwin
         {
         	return mAttris;
         }
-    }
+    };
     class drawable
     {
         public:
