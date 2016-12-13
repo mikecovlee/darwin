@@ -7,7 +7,7 @@
 #include <typeindex>
 namespace darwin {
 	enum class status {
-		null,ready,leisure,error
+		null,ready,busy,leisure,error
 	};
 	enum class results {
 		null,success,failure
