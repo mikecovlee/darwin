@@ -134,17 +134,17 @@ namespace darwin {
 				}
 			}
 		}
-		// 绘制图像函数，你同样可以通过设置最后一个参数来开启通过比例绘制
-		void draw_picture(const std::array<std::size_t,2>& posit,const picture& img)
+		// 绘制图像函数
+		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img) override
 		{
 			std::size_t col(posit[0]),row(posit[1]);
 			if(this->mImage==nullptr)
 				throw std::logic_error(__func__);
 			if(col<0||row<0||col>this->mWidth-1||row>this->mHeight-1)
 				throw std::out_of_range(__func__);
-			for(std::size_t r=row; r<this->mHeight&&r-row<img.mHeight; ++r)
-				for(std::size_t c=col; c<this->mWidth&&c-col<img.mWidth; ++c)
-					this->mImage[r*this->mWidth+c]=img.mImage[(r-row)*img.mWidth+(c-col)];
+			for(std::size_t r=row; r<this->mHeight&&r-row<img.get_height(); ++r)
+				for(std::size_t c=col; c<this->mWidth&&c-col<img.get_width(); ++c)
+					this->mImage[r*this->mWidth+c]=img.get_pixel({r-row,c-col});
 		}
 	};
 	class darwin final {

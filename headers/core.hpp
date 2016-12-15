@@ -108,5 +108,6 @@ namespace darwin {
 		virtual std::size_t get_height() const=0;
 		virtual const pixel& get_pixel(const std::array<std::size_t,2>&) const=0;
 		virtual void draw_pixel(const std::array<std::size_t,2>&,const pixel&)=0;
+		virtual void draw_picture(const std::array<std::size_t,2>&,const drawable&)=0;
 	};
 }
