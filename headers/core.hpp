@@ -113,10 +113,10 @@ namespace darwin {
 			if(p0==p1) return;
 			if(p0[0]>this->get_width()-1||p0[1]>this->get_height()-1||p1[0]>this->get_width()-1||p1[1]>this->get_height()-1)
 				throw std::out_of_range(__func__);
-			long w(p0[0]-p1[0]),h(p0[1]-p1[1]);
+			long w(p1[0]-p0[0]),h(p1[1]-p0[1]);
 			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2)));
 			for(double c=0;c<=1;c+=1.0/distance)
-				this->draw_pixel({p0[0]+w*c,p0[1]+h*c},pix);
+				this->draw_pixel({static_cast<std::size_t>(p0[0]+w*c),static_cast<std::size_t>(p0[1]+h*c)},pix);
 		}
 		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img)
 		{
