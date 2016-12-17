@@ -10,6 +10,7 @@ namespace darwin {
 		virtual results init() noexcept=0;
 		virtual results stop() noexcept=0;
 		virtual results exec_commands(commands) noexcept=0;
+		virtual results fit_drawable() noexcept=0;
 		virtual drawable* get_drawable() noexcept=0;
 		virtual results update_drawable() noexcept=0;
 	};

@@ -18,7 +18,7 @@ namespace darwin {
 				this->mImage=new pixel[w*h];
 				this->mWidth=w;
 				this->mHeight=h;
-				for(int i=0; i<this->mWidth*this->mHeight; ++i)
+				for(std::size_t i=0; i<this->mWidth*this->mHeight; ++i)
 					this->mImage[i]=img[i];
 			}
 		}
@@ -134,18 +134,6 @@ namespace darwin {
 				}
 			}
 		}
-		// 绘制图像函数
-		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img) override
-		{
-			std::size_t col(posit[0]),row(posit[1]);
-			if(this->mImage==nullptr)
-				throw std::logic_error(__func__);
-			if(col<0||row<0||col>this->mWidth-1||row>this->mHeight-1)
-				throw std::out_of_range(__func__);
-			for(std::size_t r=row; r<this->mHeight&&r-row<img.get_height(); ++r)
-				for(std::size_t c=col; c<this->mWidth&&c-col<img.get_width(); ++c)
-					this->mImage[r*this->mWidth+c]=img.get_pixel({r-row,c-col});
-		}
 	};
 	class darwin final {
 	protected:
@@ -221,3 +209,8 @@ void darwin::darwin::exit(int code=0)
 			m_dll->free_dll();
 	std::exit(code);
 }
+#if defined(__WIN32__) || defined(WIN32)
+#include "./win32_dll.hpp"
+#else
+#include "./unix_dll.hpp"
+#endif

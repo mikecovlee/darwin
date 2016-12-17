@@ -108,6 +108,16 @@ namespace darwin {
 		virtual std::size_t get_height() const=0;
 		virtual const pixel& get_pixel(const std::array<std::size_t,2>&) const=0;
 		virtual void draw_pixel(const std::array<std::size_t,2>&,const pixel&)=0;
-		virtual void draw_picture(const std::array<std::size_t,2>&,const drawable&)=0;
+		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img)
+		{
+			std::size_t col(posit[0]),row(posit[1]);
+			if(!this->usable())
+				throw std::logic_error(__func__);
+			if(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1)
+				throw std::out_of_range(__func__);
+			for(std::size_t r=row; r<this->get_height()&&r-row<img.get_height(); ++r)
+				for(std::size_t c=col; c<this->get_width()&&c-col<img.get_width(); ++c)
+					this->draw_pixel({r,c},img.get_pixel({r-row,c-col}));
+		}
 	};
 }
