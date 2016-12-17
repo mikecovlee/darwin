@@ -2,9 +2,8 @@
 #include <cstddef>
 #include <cmath>
 #include <deque>
-namespace darwin
-{
-    class picture:public drawable {
+namespace darwin {
+	class picture:public drawable {
 	protected:
 		std::size_t mWidth,mHeight;
 		pixel* mImage=nullptr;
@@ -96,7 +95,7 @@ namespace darwin
 		{
 			if(this->mImage==nullptr)
 				throw std::logic_error(__func__);
-			if(posit[0]<0||posit[1]<0||posit[0]>this->mWidth-1||posit[1]>this->mHeight-1)
+			if(posit[0]>this->mWidth-1||posit[1]>this->mHeight-1)
 				throw std::out_of_range(__func__);
 			return this->mImage[posit[1]*this->mWidth+posit[0]];
 		}
@@ -105,7 +104,7 @@ namespace darwin
 		{
 			if(this->mImage==nullptr)
 				throw std::logic_error(__func__);
-			if(posit[0]<0||posit[1]<0||posit[0]>this->mWidth-1||posit[1]>this->mHeight-1)
+			if(posit[0]>this->mWidth-1||posit[1]>this->mHeight-1)
 				throw std::out_of_range(__func__);
 			this->mImage[posit[1]*this->mWidth+posit[0]]=pix;
 		}

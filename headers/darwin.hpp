@@ -7,12 +7,12 @@
 #include <cstdlib>
 namespace darwin {
 	class sync_clock final {
-		private:
+	private:
 		timer_t mBegin;
 		std::size_t mFreq;
-		public:
-		sync_clock():mBegin(timer::time()),mFreq(60){}
-		sync_clock(std::size_t freq):mBegin(timer::time()),mFreq(freq){}
+	public:
+		sync_clock():mBegin(timer::time()),mFreq(60) {}
+		sync_clock(std::size_t freq):mBegin(timer::time()),mFreq(freq) {}
 		~sync_clock()=default;
 		std::size_t get_freq() const
 		{

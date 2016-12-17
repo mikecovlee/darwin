@@ -23,8 +23,8 @@ namespace darwin {
 	};
 	class pixel final {
 		char mChar=' ';
-		std::array<bool,2> mAttris= {false,false};
-		std::array<colors,2> mColors= {colors::white,colors::black};
+		std::array<bool,2> mAttris= {{false,false}};
+		std::array<colors,2> mColors= {{colors::white,colors::black}};
 	public:
 		pixel()=default;
 		pixel(const pixel&)=default;
@@ -113,7 +113,7 @@ namespace darwin {
 			std::size_t col(posit[0]),row(posit[1]);
 			if(!this->usable())
 				throw std::logic_error(__func__);
-			if(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1)
+			if(col>this->get_width()-1||row>this->get_height()-1)
 				throw std::out_of_range(__func__);
 			for(std::size_t r=row; r<this->get_height()&&r-row<img.get_height(); ++r)
 				for(std::size_t c=col; c<this->get_width()&&c-col<img.get_width(); ++c)
