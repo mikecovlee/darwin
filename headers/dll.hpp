@@ -2,7 +2,7 @@
 #include "./adapter.hpp"
 namespace darwin
 {
-    platform_adapter* dll_resource();
+    platform_adapter* dll_resource(){}
 }
 extern "C"
 {

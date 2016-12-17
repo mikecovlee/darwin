@@ -10,7 +10,9 @@ int main()
     darwin::pixel p(' ',{true,false},{darwin::colors::red,darwin::colors::white});
     while(true)
     {
+    	usleep(100000);
         adapter->fit_drawable();
+        p.set_char(' ');
         pic->fill(p);
         for(std::size_t x=0;x<greeting.size()&&x<pic->get_width();++x)
         {
