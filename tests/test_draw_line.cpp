@@ -26,32 +26,30 @@ int main()
 	darwin::sync_clock clock(30);
 	std::size_t x0(0),y0(0),x1(1),y1(1);
 	while(true) {
-		if(KbHit())
-		{
-			switch(GetKbHit())
-			{
-				case 'w':
+		if(KbHit()) {
+			switch(GetKbHit()) {
+			case 'w':
 				--y0;
 				break;
-				case 's':
+			case 's':
 				++y0;
 				break;
-				case 'a':
+			case 'a':
 				--x0;
 				break;
-				case 'd':
+			case 'd':
 				++x0;
 				break;
-				case 'i':
+			case 'i':
 				--y1;
 				break;
-				case 'k':
+			case 'k':
 				++y1;
 				break;
-				case 'j':
+			case 'j':
 				--x1;
 				break;
-				case 'l':
+			case 'l':
 				++x1;
 				break;
 			}
@@ -59,7 +57,7 @@ int main()
 		clock.reset();
 		adapter->fit_drawable();
 		pic->clear();
-		pic->draw_line({x0,y0},{x1,y1},darwin::pixel('@', {true,false}, {darwin::colors::blue,darwin::colors::white}));
+		pic->draw_line({x0,y0}, {x1,y1},darwin::pixel('@', {true,false}, {darwin::colors::blue,darwin::colors::white}));
 		adapter->update_drawable();
 		clock.sync();
 	}
