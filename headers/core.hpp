@@ -1,7 +1,6 @@
 #pragma once
 #include <array>
 #include <string>
-#include <iosfwd>
 #include <memory>
 #include <typeinfo>
 #include <typeindex>
