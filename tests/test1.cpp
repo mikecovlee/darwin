@@ -3,7 +3,6 @@
 int main()
 {
 	darwin::runtime.load("./test.dll");
-	while(darwin::runtime.get_state()==darwin::status::busy);
 	auto adapter=darwin::runtime.get_adapter();
 	auto pic=adapter->get_drawable();
 	std::string greeting="Hello,World!";
@@ -18,7 +17,6 @@ int main()
 			p.set_char(greeting[x]);
 			pic->draw_pixel({x,0},p);
 		}
-		pic->draw_line({1,1},{pic->get_width()-2,pic->get_height()-2},darwin::pixel('@', {true,true}, {darwin::colors::blue,darwin::colors::white}));
 		adapter->update_drawable();
 		clock.sync();
 	}
