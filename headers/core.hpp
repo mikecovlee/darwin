@@ -110,13 +110,14 @@ namespace darwin {
 		virtual void draw_pixel(const std::array<std::size_t,2>&,const pixel&)=0;
 		virtual void draw_line(const std::array<std::size_t,2>& p0,const std::array<std::size_t,2>& p1,const pixel& pix)
 		{
-			if(p0==p1) return;
 			if(p0[0]>this->get_width()-1||p0[1]>this->get_height()-1||p1[0]>this->get_width()-1||p1[1]>this->get_height()-1)
 				throw std::out_of_range(__func__);
 			long w(p1[0]-p0[0]),h(p1[1]-p0[1]);
 			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2)));
 			for(double c=0;c<=1;c+=1.0/distance)
 				this->draw_pixel({static_cast<std::size_t>(p0[0]+w*c),static_cast<std::size_t>(p0[1]+h*c)},pix);
+			this->draw_pixel(p0,pix);
+			this->draw_pixel(p1,pix);
 		}
 		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img)
 		{
