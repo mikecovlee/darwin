@@ -2,7 +2,7 @@
 #include <string>
 int main()
 {
-	darwin::runtime.load("./test.dll");
+	darwin::runtime.load("./darwin.module");
 	auto adapter=darwin::runtime.get_adapter();
 	auto pic=adapter->get_drawable();
 	std::string greeting="Hello,World!";

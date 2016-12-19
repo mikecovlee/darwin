@@ -14,14 +14,16 @@ namespace darwin {
 		virtual drawable* get_drawable() noexcept=0;
 		virtual results update_drawable() noexcept=0;
 	};
-	class dll_adapter {
+	class module_adapter {
 	public:
-		dll_adapter()=default;
-		dll_adapter(const dll_adapter&)=delete;
-		virtual ~dll_adapter()=default;
+		module_adapter()=default;
+		module_adapter(const module_adapter&)=delete;
+		virtual ~module_adapter()=default;
 		virtual status get_state() const noexcept=0;
-		virtual results load_dll(const std::string&) noexcept=0;
-		virtual results free_dll() noexcept=0;
+		virtual results load_module(const std::string&) noexcept=0;
+		virtual results free_module() noexcept=0;
 		virtual platform_adapter* get_platform_adapter() noexcept=0;
 	};
+	typedef platform_adapter*(*module_enterance)();
+	const char* module_enterance_name="COV_DARWIN_MODULE_MAIN";
 }

@@ -20,7 +20,7 @@ int GetKbHit()
 }
 int main()
 {
-	darwin::runtime.load("./test.dll");
+	darwin::runtime.load("./darwin.module");
 	auto adapter=darwin::runtime.get_adapter();
 	auto pic=adapter->get_drawable();
 	darwin::sync_clock clock(30);

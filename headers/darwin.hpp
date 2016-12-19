@@ -14,20 +14,16 @@ namespace darwin {
 		sync_clock():mBegin(timer::time()),mFreq(60) {}
 		sync_clock(std::size_t freq):mBegin(timer::time()),mFreq(freq) {}
 		~sync_clock()=default;
-		std::size_t get_freq() const
-		{
+		std::size_t get_freq() const {
 			return mFreq;
 		}
-		void set_freq(std::size_t freq)
-		{
+		void set_freq(std::size_t freq) {
 			mFreq=freq;
 		}
-		void reset()
-		{
+		void reset() {
 			mBegin=timer::time();
 		}
-		void sync()
-		{
+		void sync() {
 			timer_t spend=timer::time()-mBegin;
 			timer_t period=1000/mFreq;
 			if(period>spend)
@@ -37,41 +33,38 @@ namespace darwin {
 	class darwin final {
 	protected:
 		timer_t m_time_out=1000;
-		dll_adapter* m_dll=nullptr;
+		module_adapter* m_module=nullptr;
 		platform_adapter* m_platform=nullptr;
-		bool wait_for_dll();
+		bool wait_for_module();
 		bool wait_for_platform();
 	public:
 		darwin()=delete;
-		darwin(dll_adapter* dll):m_dll(dll) {}
+		darwin(module_adapter* module):m_module(module) {}
 		darwin(const darwin&)=delete;
 		darwin(darwin&&) noexcept=delete;
 		~darwin();
 		void load(const std::string&);
 		void exit(int);
-		status get_state() const noexcept
-		{
-			if(m_dll==nullptr) return status::error;
+		status get_state() const noexcept {
+			if(m_module==nullptr) return status::error;
 			if(m_platform==nullptr) return status::leisure;
-			if(m_dll->get_state()==status::busy || m_platform->get_state()==status::busy) return status::busy;
-			if(m_dll->get_state()==status::ready&&m_platform->get_state()==status::ready) return status::ready;
+			if(m_module->get_state()==status::busy || m_platform->get_state()==status::busy) return status::busy;
+			if(m_module->get_state()==status::ready&&m_platform->get_state()==status::ready) return status::ready;
 			return status::null;
 		}
-		void set_time_out(timer_t tl) noexcept
-		{
+		void set_time_out(timer_t tl) noexcept {
 			m_time_out=tl;
 		}
-		platform_adapter* get_adapter() noexcept
-		{
+		platform_adapter* get_adapter() noexcept {
 			return m_platform;
 		}
 	};
 }
-bool darwin::darwin::wait_for_dll()
+bool darwin::darwin::wait_for_module()
 {
-	if(m_dll==nullptr) return false;
-	for(timer_t nt=timer::time(); m_dll->get_state()==status::busy&&timer::time()-nt<=m_time_out;);
-	if(m_dll->get_state()==status::busy) return false;
+	if(m_module==nullptr) return false;
+	for(timer_t nt=timer::time(); m_module->get_state()==status::busy&&timer::time()-nt<=m_time_out;);
+	if(m_module->get_state()==status::busy) return false;
 	else return true;
 }
 bool darwin::darwin::wait_for_platform()
@@ -86,16 +79,18 @@ darwin::darwin::~darwin()
 	if(m_platform!=nullptr)
 		if(wait_for_platform()&&m_platform->get_state()==status::ready)
 			m_platform->stop();
-	if(m_dll!=nullptr)
-		if(wait_for_dll()&&m_dll->get_state()==status::ready)
-			m_dll->free_dll();
+	if(m_module!=nullptr)
+		if(wait_for_module()&&m_module->get_state()==status::ready)
+			m_module->free_module();
 }
 void darwin::darwin::load(const std::string& file)
 {
 	if(get_state()!=status::leisure) throw std::logic_error(__func__);
-	if(wait_for_dll()&&m_dll->get_state()==status::leisure)
-		m_dll->load_dll(file);
-	m_platform=m_dll->get_platform_adapter();
+	if(wait_for_module()&&m_module->get_state()==status::leisure) {
+		if(m_module->load_module(file)==results::failure) throw std::logic_error(__func__);
+	} else
+		throw std::logic_error(__func__);
+	m_platform=m_module->get_platform_adapter();
 	m_platform->init();
 }
 void darwin::darwin::exit(int code=0)
@@ -103,17 +98,19 @@ void darwin::darwin::exit(int code=0)
 	if(m_platform!=nullptr)
 		if(wait_for_platform()&&m_platform->get_state()==status::ready)
 			m_platform->stop();
-	if(m_dll!=nullptr)
-		if(wait_for_dll()&&m_dll->get_state()==status::ready)
-			m_dll->free_dll();
+	if(m_module!=nullptr)
+		if(wait_for_module()&&m_module->get_state()==status::ready)
+			m_module->free_module();
+	m_platform=nullptr;
+	m_module=nullptr;
 	std::exit(code);
 }
 #if defined(__DFUNIX__)
-#include "./unix_dll.hpp"
+#include "./unix_module.hpp"
 #else
 #if defined(__WIN32__) || defined(WIN32)
-#include "./win32_dll.hpp"
+#include "./win32_module.hpp"
 #else
-#include "./unix_dll.hpp"
+#include "./unix_module.hpp"
 #endif
 #endif

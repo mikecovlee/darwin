@@ -7,19 +7,19 @@
 #include <typeindex>
 namespace darwin {
 	enum class status {
-		null,ready,busy,leisure,error
+	    null,ready,busy,leisure,error
 	};
 	enum class results {
-		null,success,failure
+	    null,success,failure
 	};
 	enum class colors {
-		white,black,red,green,blue,pink,yellow,cyan
+	    white,black,red,green,blue,pink,yellow,cyan
 	};
 	enum class attris {
-		bright,underline
+	    bright,underline
 	};
 	enum class commands {
-		echo_on,echo_off,reset_cursor,reset_attri,clrscr
+	    echo_on,echo_off,reset_cursor,reset_attri,clrscr
 	};
 	class pixel final {
 		char mChar=' ';
@@ -30,60 +30,46 @@ namespace darwin {
 		pixel(const pixel&)=default;
 		pixel(char ch,const std::array<bool,2>& a,const std::array<colors,2>& c):mChar(ch),mAttris(a),mColors(c) {}
 		~pixel()=default;
-		void set_char(char c)
-		{
+		void set_char(char c) {
 			mChar=c;
 		}
-		char get_char() const
-		{
+		char get_char() const {
 			return mChar;
 		}
-		void set_front_color(colors c)
-		{
+		void set_front_color(colors c) {
 			mColors[0]=c;
 		}
-		colors get_front_color() const
-		{
+		colors get_front_color() const {
 			return mColors[0];
 		}
-		void set_back_color(colors c)
-		{
+		void set_back_color(colors c) {
 			mColors[1]=c;
 		}
-		colors get_back_color() const
-		{
+		colors get_back_color() const {
 			return mColors[1];
 		}
-		void set_colors(const std::array<colors,2>& c)
-		{
+		void set_colors(const std::array<colors,2>& c) {
 			mColors=c;
 		}
-		const std::array<colors,2>& get_colors() const
-		{
+		const std::array<colors,2>& get_colors() const {
 			return mColors;
 		}
-		void set_bright(bool value)
-		{
+		void set_bright(bool value) {
 			mAttris[0]=value;
 		}
-		bool is_bright() const
-		{
+		bool is_bright() const {
 			return mAttris[0];
 		}
-		void set_underline(bool value)
-		{
+		void set_underline(bool value) {
 			mAttris[1]=value;
 		}
-		bool is_underline() const
-		{
+		bool is_underline() const {
 			return mAttris[1];
 		}
-		void set_attris(const std::array<bool,2>& a)
-		{
+		void set_attris(const std::array<bool,2>& a) {
 			mAttris=a;
 		}
-		const std::array<bool,2>& get_attris() const
-		{
+		const std::array<bool,2>& get_attris() const {
 			return mAttris;
 		}
 	};
@@ -92,12 +78,10 @@ namespace darwin {
 		drawable()=default;
 		drawable(const drawable&)=default;
 		virtual ~drawable()=default;
-		virtual std::type_index get_type() const final
-		{
+		virtual std::type_index get_type() const final {
 			return typeid(*this);
 		}
-		virtual std::shared_ptr<drawable> clone() noexcept
-		{
+		virtual std::shared_ptr<drawable> clone() noexcept {
 			return nullptr;
 		}
 		virtual bool usable() const noexcept=0;
@@ -108,19 +92,17 @@ namespace darwin {
 		virtual std::size_t get_height() const=0;
 		virtual const pixel& get_pixel(const std::array<std::size_t,2>&) const=0;
 		virtual void draw_pixel(const std::array<std::size_t,2>&,const pixel&)=0;
-		virtual void draw_line(const std::array<std::size_t,2>& p0,const std::array<std::size_t,2>& p1,const pixel& pix)
-		{
+		virtual void draw_line(const std::array<std::size_t,2>& p0,const std::array<std::size_t,2>& p1,const pixel& pix) {
 			if(p0[0]>this->get_width()-1||p0[1]>this->get_height()-1||p1[0]>this->get_width()-1||p1[1]>this->get_height()-1)
 				throw std::out_of_range(__func__);
 			long w(p1[0]-p0[0]),h(p1[1]-p0[1]);
 			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2)));
-			for(double c=0;c<=1;c+=1.0/distance)
+			for(double c=0; c<=1; c+=1.0/distance)
 				this->draw_pixel({static_cast<std::size_t>(p0[0]+w*c),static_cast<std::size_t>(p0[1]+h*c)},pix);
 			this->draw_pixel(p0,pix);
 			this->draw_pixel(p1,pix);
 		}
-		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img)
-		{
+		virtual void draw_picture(const std::array<std::size_t,2>& posit,const drawable& img) {
 			std::size_t col(posit[0]),row(posit[1]);
 			if(!this->usable())
 				throw std::logic_error(__func__);
