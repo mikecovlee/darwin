@@ -1,4 +1,6 @@
+#define DARWIN_FORCE_BUILTIN
 #include "../headers/darwin.hpp"
+#include <unistd.h>
 bool KbHit()
 {
 	bool ret;

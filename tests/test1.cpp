@@ -1,3 +1,4 @@
+#define DARWIN_FORCE_BUILTIN
 #include "../headers/darwin.hpp"
 #include <string>
 int main()
