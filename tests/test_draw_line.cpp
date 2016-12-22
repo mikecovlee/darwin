@@ -54,6 +54,9 @@ int main()
 			case 'l':
 				++x1;
 				break;
+			case 'c':
+				darwin::print_screen(*pic);
+				break;
 			}
 		}
 		clock.reset();

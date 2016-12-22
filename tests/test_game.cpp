@@ -45,6 +45,9 @@ int main()
 			case '8':
 				++by;
 				break;
+			case '5':
+				print_screen(*pic);
+				break;
 			case '4':
 				--bx;
 				break;

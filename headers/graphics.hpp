@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <fstream>
 #include <cmath>
 #include <deque>
 namespace darwin {
@@ -114,4 +115,99 @@ namespace darwin {
 			}
 		}
 	};
+	bool serial_picture(const drawable& pic,std::deque<char>& dat)
+	{
+		if(pic.get_width()>9999||pic.get_height()>9999) return false;
+		static std::string tmp;
+		dat.clear();
+		tmp=std::to_string(pic.get_width());
+		for(int count=4-tmp.size();count>0;--count)
+			dat.push_back('0');
+		for(auto& ch:tmp)
+			dat.push_back(ch);
+		tmp=std::to_string(pic.get_height());
+		for(int count=4-tmp.size();count>0;--count)
+			dat.push_back('0');
+		for(auto& ch:tmp)
+			dat.push_back(ch);
+		for(std::size_t y=0;y<pic.get_height();++y)
+		{
+			for(std::size_t x=0;x<pic.get_width();++x)
+			{
+				const pixel& pix=pic.get_pixel({x,y});
+				if(pix.is_bright())
+					dat.push_back('0');
+				else
+					dat.push_back('1');
+				if(pix.is_underline())
+					dat.push_back('0');
+				else
+					dat.push_back('1');
+				switch(pix.get_front_color())
+				{
+					case colors::white:
+					dat.push_back('1');
+					break;
+					case colors::black:
+					dat.push_back('2');
+					break;
+					case colors::red:
+					dat.push_back('3');
+					break;
+					case colors::green:
+					dat.push_back('4');
+					break;
+					case colors::blue:
+					dat.push_back('5');
+					break;
+					case colors::pink:
+					dat.push_back('6');
+					break;
+					case colors::yellow:
+					dat.push_back('7');
+					break;
+					case colors::cyan:
+					dat.push_back('8');
+					break;
+				}
+				switch(pix.get_back_color())
+				{
+					case colors::white:
+					dat.push_back('1');
+					break;
+					case colors::black:
+					dat.push_back('2');
+					break;
+					case colors::red:
+					dat.push_back('3');
+					break;
+					case colors::green:
+					dat.push_back('4');
+					break;
+					case colors::blue:
+					dat.push_back('5');
+					break;
+					case colors::pink:
+					dat.push_back('6');
+					break;
+					case colors::yellow:
+					dat.push_back('7');
+					break;
+					case colors::cyan:
+					dat.push_back('8');
+					break;
+				}
+				dat.push_back(pix.get_char());
+			}
+		}
+		return true;
+	}
+	void print_screen(const drawable& pic)
+	{
+		static std::deque<char> file_buffer;
+		darwin::serial_picture(pic,file_buffer);
+		std::ofstream out("./darwin_screen_shot.cdpf");
+		for(auto&it:file_buffer)
+			out<<it;
+	}
 }
