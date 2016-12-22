@@ -14,16 +14,20 @@ namespace darwin {
 		sync_clock():mBegin(timer::time()),mFreq(60) {}
 		sync_clock(std::size_t freq):mBegin(timer::time()),mFreq(freq) {}
 		~sync_clock()=default;
-		std::size_t get_freq() const {
+		std::size_t get_freq() const
+		{
 			return mFreq;
 		}
-		void set_freq(std::size_t freq) {
+		void set_freq(std::size_t freq)
+		{
 			mFreq=freq;
 		}
-		void reset() {
+		void reset()
+		{
 			mBegin=timer::time();
 		}
-		void sync() {
+		void sync()
+		{
 			timer_t spend=timer::time()-mBegin;
 			timer_t period=1000/mFreq;
 			if(period>spend)
@@ -45,17 +49,20 @@ namespace darwin {
 		~darwin();
 		void load(const std::string&);
 		void exit(int);
-		status get_state() const noexcept {
+		status get_state() const noexcept
+		{
 			if(m_module==nullptr) return status::error;
 			if(m_platform==nullptr) return status::leisure;
 			if(m_module->get_state()==status::busy || m_platform->get_state()==status::busy) return status::busy;
 			if(m_module->get_state()==status::ready&&m_platform->get_state()==status::ready) return status::ready;
 			return status::null;
 		}
-		void set_time_out(timer_t tl) noexcept {
+		void set_time_out(timer_t tl) noexcept
+		{
 			m_time_out=tl;
 		}
-		platform_adapter* get_adapter() noexcept {
+		platform_adapter* get_adapter() noexcept
+		{
 			return m_platform;
 		}
 	};

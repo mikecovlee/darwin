@@ -13,39 +13,43 @@ namespace darwin {
 	public:
 		unix_module_adapter()=default;
 		virtual ~unix_module_adapter()=default;
-		virtual status get_state() const noexcept override {
+		virtual status get_state() const noexcept override
+		{
 			if(m_adapter!=nullptr)
 				return status::ready;
 			else
 				return status::leisure;
 		}
-		virtual results load_module(const std::string& path) noexcept override {
+		virtual results load_module(const std::string& path) noexcept override
+		{
 			signal(SIGSEGV,handle_segfault);
 			signal(SIGINT,force_exit);
 			signal(SIGABRT,force_exit);
-			#ifdef DARWIN_FORCE_BUILTIN
+#ifdef DARWIN_FORCE_BUILTIN
 			m_adapter=module_resource();
-			#else
+#else
 			m_handle=dlopen(path.c_str(),RTLD_LAZY);
 			if(m_handle==nullptr) return results::failure;
 			module_enterance enterance=(module_enterance)dlsym(m_handle,module_enterance_name);
 			m_adapter=enterance();
-			#endif
+#endif
 			if(m_adapter==nullptr) return results::failure;
 			return results::success;
 		}
-		virtual results free_module() noexcept override {
+		virtual results free_module() noexcept override
+		{
 			signal(SIGSEGV,nullptr);
 			signal(SIGINT,nullptr);
 			signal(SIGABRT,nullptr);
-			#ifndef DARWIN_FORCE_BUILTIN
+#ifndef DARWIN_FORCE_BUILTIN
 			dlclose(m_handle);
 			m_handle=nullptr;
-			#endif
+#endif
 			m_adapter=nullptr;
 			return results::success;
 		}
-		virtual platform_adapter* get_platform_adapter() noexcept override {
+		virtual platform_adapter* get_platform_adapter() noexcept override
+		{
 			return this->m_adapter;
 		}
 	} dunixmodule;

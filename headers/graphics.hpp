@@ -2,12 +2,14 @@
 #include <cstddef>
 #include <cmath>
 #include <deque>
+#include "./core.hpp"
 namespace darwin {
 	class picture:public drawable {
 	protected:
 		std::size_t mWidth,mHeight;
 		pixel* mImage=nullptr;
-		void copy(std::size_t w,std::size_t h,pixel* const img) {
+		void copy(std::size_t w,std::size_t h,pixel* const img)
+		{
 			if(img!=nullptr) {
 				delete[] this->mImage;
 				this->mImage=new pixel[w*h];
@@ -20,43 +22,54 @@ namespace darwin {
 	public:
 		picture():mWidth(0),mHeight(0),mImage(nullptr) {}
 		picture(std::size_t w,std::size_t h):mImage(new pixel[h*w]),mWidth(w),mHeight(h) {}
-		picture(std::size_t w,std::size_t h,const pixel& pix):mImage(new pixel[h*w]),mWidth(w),mHeight(h) {
+		picture(std::size_t w,std::size_t h,const pixel& pix):mImage(new pixel[h*w]),mWidth(w),mHeight(h)
+		{
 			for(pixel* it=this->mImage; it!=this->mImage+w*h; ++it) *it=pix;
 		}
-		picture(const picture& img):mWidth(0),mHeight(0),mImage(nullptr) {
+		picture(const picture& img):mWidth(0),mHeight(0),mImage(nullptr)
+		{
 			copy(img.mWidth,img.mHeight,img.mImage);
 		}
-		picture(picture&& img):mWidth(0),mHeight(0),mImage(nullptr) {
+		picture(picture&& img):mWidth(0),mHeight(0),mImage(nullptr)
+		{
 			copy(img.mWidth,img.mHeight,img.mImage);
 		}
-		virtual ~picture() {
+		virtual ~picture()
+		{
 			delete[] this->mImage;
 		}
-		picture& operator=(const picture& img) {
+		picture& operator=(const picture& img)
+		{
 			if(&img!=this)
 				this->copy(img.mWidth,img.mHeight,img.mImage);
 			return *this;
 		}
-		picture& operator=(picture&& img) {
+		picture& operator=(picture&& img)
+		{
 			if(&img!=this)
 				this->copy(img.mWidth,img.mHeight,img.mImage);
 			return *this;
 		}
-		virtual std::shared_ptr<drawable> clone() noexcept override {
+		virtual std::shared_ptr<drawable> clone() noexcept override
+		{
 			return std::make_shared<picture>(*this);
 		}
-		virtual bool usable() const noexcept override {
+		virtual bool usable() const noexcept override
+		{
 			return this->mImage!=nullptr;
 		}
-		virtual std::size_t get_width() const override {
+		virtual std::size_t get_width() const override
+		{
 			return this->mWidth;
 		}
-		virtual std::size_t get_height() const override {
+		virtual std::size_t get_height() const override
+		{
 			return this->mHeight;
 		}
 		// 重新设置尺寸
 		// resize将令您失去所有数据，请注意备份
-		virtual void resize(std::size_t w,std::size_t h) override {
+		virtual void resize(std::size_t w,std::size_t h) override
+		{
 			if(w==this->mWidth&&h==this->mHeight) return;
 			delete[] this->mImage;
 			this->mImage=new pixel[h*w];
@@ -64,39 +77,44 @@ namespace darwin {
 			this->mHeight=h;
 		}
 		// 填充图像
-		virtual void fill(const pixel& pix) override {
+		virtual void fill(const pixel& pix) override
+		{
 			if(this->mImage==nullptr)
 				throw std::logic_error(__func__);
 			for(pixel* it=this->mImage; it!=this->mImage+this->mWidth*this->mHeight; ++it) *it=pix;
 		}
 		// 清空图像
-		virtual void clear() override {
+		virtual void clear() override
+		{
 			if(this->mImage!=nullptr) {
 				delete[] this->mImage;
 				this->mImage=new pixel[mHeight*mWidth];
 			}
 		}
 		// 通过二维坐标访问图像
-		virtual const pixel& get_pixel(const std::array<std::size_t,2>& posit) const override {
+		virtual const pixel& get_pixel(std::size_t x,std::size_t y) const override
+		{
 			if(this->mImage==nullptr)
 				throw std::logic_error(__func__);
-			if(posit[0]>this->mWidth-1||posit[1]>this->mHeight-1)
+			if(x>this->mWidth-1||y>this->mHeight-1)
 				throw std::out_of_range(__func__);
-			return this->mImage[posit[1]*this->mWidth+posit[0]];
+			return this->mImage[y*this->mWidth+x];
 		}
 		// 单点绘制函数
-		virtual void draw_pixel(const std::array<std::size_t,2>& posit,const pixel& pix) override {
+		virtual void draw_pixel(int x,int y,const pixel& pix) override
+		{
 			if(this->mImage==nullptr)
 				throw std::logic_error(__func__);
-			if(posit[0]>this->mWidth-1||posit[1]>this->mHeight-1)
+			if(debug_mod&&(x<0||y<0||x>this->mWidth-1||y>this->mHeight-1))
 				throw std::out_of_range(__func__);
-			this->mImage[posit[1]*this->mWidth+posit[0]]=pix;
+			this->mImage[y*this->mWidth+x]=pix;
 		}
 		// 多点绘制函数，可设置为连接各个点
-		void draw_pixels(const std::deque<std::array<std::size_t,2>>& points,const pixel& pix,bool connect_points=false) {
+		void draw_pixels(const std::deque<std::array<std::size_t,2>>& points,const pixel& pix,bool connect_points=false)
+		{
 			if(!connect_points) {
 				for(auto &it:points)
-					this->draw_pixel(it,pix);
+					this->draw_pixel(it[0],it[1],pix);
 			} else {
 				auto p0=points.begin();
 				auto p1=++points.begin();
@@ -108,7 +126,7 @@ namespace darwin {
 						a=h;
 					a=std::abs(a);
 					for(double c=0; c<=1; c+=1.0/a) {
-						this->draw_pixel({std::size_t(x1+c*w),std::size_t(y1+c*h)},pix);
+						this->draw_pixel(int(x1+c*w),int(y1+c*h),pix);
 					}
 				}
 			}
