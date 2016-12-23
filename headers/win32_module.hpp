@@ -9,5 +9,5 @@ namespace darwin {
 		virtual results free_module() noexcept override;
 		virtual platform_adapter* get_platform_adapter() noexcept override;
 	} dwin32module;
-	static darwin runtime(&dwin32module);
+	static darwin_rt runtime(&dwin32module);
 }

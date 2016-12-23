@@ -23,10 +23,9 @@ int GetKbHit()
 int main()
 {
 	darwin::runtime.load("./darwin.module");
-	auto adapter=darwin::runtime.get_adapter();
-	auto pic=adapter->get_drawable();
+	auto pic=darwin::runtime.get_drawable();
 	darwin::sync_clock clock(30);
-	std::size_t x0(0),y0(0),x1(1),y1(1);
+	int x0(0),y0(0),x1(1),y1(1);
 	while(true) {
 		if(KbHit()) {
 			switch(GetKbHit()) {
@@ -55,15 +54,15 @@ int main()
 				++x1;
 				break;
 			case 'c':
-				darwin::print_screen(*pic);
+				darwin::print_screen();
 				break;
 			}
 		}
 		clock.reset();
-		adapter->fit_drawable();
+		darwin::runtime.fit_drawable();
 		pic->clear();
-		pic->draw_line({x0,y0}, {x1,y1},darwin::pixel('@', {true,false}, {darwin::colors::blue,darwin::colors::white}));
-		adapter->update_drawable();
+		pic->draw_line(x0,y0,x1,y1,darwin::pixel('@',true,false,darwin::colors::blue,darwin::colors::white));
+		darwin::runtime.update_drawable();
 		clock.sync();
 	}
 	return 0;

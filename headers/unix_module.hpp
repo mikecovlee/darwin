@@ -53,7 +53,7 @@ namespace darwin {
 			return this->m_adapter;
 		}
 	} dunixmodule;
-	static darwin runtime(&dunixmodule);
+	static darwin_rt runtime(&dunixmodule);
 }
 void darwin::unix_module_adapter::force_exit(int flag)
 {

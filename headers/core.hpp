@@ -5,12 +5,8 @@
 #include <memory>
 #include <typeinfo>
 #include <typeindex>
+#include "./debugger.hpp"
 namespace darwin {
-#ifdef DARWIN_DEBUG
-	static constexpr bool debug_mod=true;
-#else
-	static constexpr bool debug_mod=false;
-#endif
 	enum class status {
 		null,ready,busy,leisure,error
 	};
@@ -118,8 +114,10 @@ namespace darwin {
 		virtual void draw_pixel(int,int,const pixel&)=0;
 		virtual void draw_line(int p0x,int p0y,int p1x,int p1y,const pixel& pix)
 		{
-			if(debug_mod&&(p0x<0||p0y<0||p1x<0||p1y<0||p0x>this->get_width()-1||p0y>this->get_height()-1||p1x>this->get_width()-1||p1y>this->get_height()-1))
-				throw std::out_of_range(__func__);
+			if(!this->usable())
+				Darwin_Error("Use of not available object.");
+			if(p0x<0||p0y<0||p1x<0||p1y<0||p0x>this->get_width()-1||p0y>this->get_height()-1||p1x>this->get_width()-1||p1y>this->get_height()-1)
+				Darwin_Warning("Out of range.");
 			long w(p1x-p0x),h(p1y-p0y);
 			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2)));
 			for(double c=0; c<=1; c+=1.0/distance)
@@ -129,10 +127,10 @@ namespace darwin {
 		}
 		virtual void draw_picture(int col,int row,const drawable& img)
 		{
-			if(!this->usable())
-				throw std::logic_error(__func__);
-			if(debug_mod&&(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1))
-				throw std::out_of_range(__func__);
+			if(!this->usable()||!img.usable())
+				Darwin_Error("Use of not available object.");
+			if(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1)
+				Darwin_Warning("Out of range.");
 			for(int r=row; r<this->get_height()&&r-row<img.get_height(); ++r)
 				for(int c=col; c<this->get_width()&&c-col<img.get_width(); ++c)
 					if(r-row>=0&&c-col>=0) this->draw_pixel(r,c,img.get_pixel(r-row,c-col));

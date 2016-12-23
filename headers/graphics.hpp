@@ -71,7 +71,8 @@ namespace darwin {
 		// resize将令您失去所有数据，请注意备份
 		virtual void resize(std::size_t w,std::size_t h) override
 		{
-			if(w==this->mWidth&&h==this->mHeight) return;
+			if(w==this->mWidth&&h==this->mHeight)
+				return;
 			delete[] this->mImage;
 			this->mImage=new pixel[h*w];
 			this->mWidth=w;
@@ -81,7 +82,7 @@ namespace darwin {
 		virtual void fill(const pixel& pix) override
 		{
 			if(this->mImage==nullptr)
-				throw std::logic_error(__func__);
+				Darwin_Error("Use of not available object.");
 			for(pixel* it=this->mImage; it!=this->mImage+this->mWidth*this->mHeight; ++it) *it=pix;
 		}
 		// 清空图像
@@ -96,63 +97,43 @@ namespace darwin {
 		virtual const pixel& get_pixel(std::size_t x,std::size_t y) const override
 		{
 			if(this->mImage==nullptr)
-				throw std::logic_error(__func__);
+				Darwin_Error("Use of not available object.");
 			if(x>this->mWidth-1||y>this->mHeight-1)
-				throw std::out_of_range(__func__);
+				Darwin_Error("Out of range.");
 			return this->mImage[y*this->mWidth+x];
 		}
 		// 单点绘制函数
 		virtual void draw_pixel(int x,int y,const pixel& pix) override
 		{
 			if(this->mImage==nullptr)
-				throw std::logic_error(__func__);
-			if(debug_mod&&(x<0||y<0||x>this->mWidth-1||y>this->mHeight-1))
-				throw std::out_of_range(__func__);
+				Darwin_Error("Use of not available object.");
+			if(x<0||y<0||x>this->mWidth-1||y>this->mHeight-1)
+			{
+				Darwin_Warning("Out of range.");
+				return;
+			}
 			this->mImage[y*this->mWidth+x]=pix;
 		}
-		// 多点绘制函数，可设置为连接各个点
-		void draw_pixels(const std::deque<std::array<std::size_t,2>>& points,const pixel& pix,bool connect_points=false)
-		{
-			if(!connect_points) {
-				for(auto &it:points)
-					this->draw_pixel(it[0],it[1],pix);
-			} else {
-				auto p0=points.begin();
-				auto p1=++points.begin();
-				for(; p1!=points.end(); ++p0,++p1) {
-					double x1(p0->at(0)),x2(p1->at(0)),y1(p0->at(1)),y2(p1->at(1)),w(x2-x1),h(y2-y1),a(0);
-					if(w>=h)
-						a=w;
-					else
-						a=h;
-					a=std::abs(a);
-					for(double c=0; c<=1; c+=1.0/a) {
-						this->draw_pixel(int(x1+c*w),int(y1+c*h),pix);
-					}
-				}
-			}
-		}
 	};
-	bool serial_picture(const drawable& pic,std::deque<char>& dat)
+	bool serial_picture(drawable* pic,std::deque<char>& dat)
 	{
-		if(pic.get_width()>9999||pic.get_height()>9999) return false;
+		if(pic==nullptr) return false;
+		if(pic->get_width()>9999||pic->get_height()>9999) return false;
 		static std::string tmp;
 		dat.clear();
-		tmp=std::to_string(pic.get_width());
-		for(int count=4-tmp.size();count>0;--count)
+		tmp=std::to_string(pic->get_width());
+		for(int count=4-tmp.size(); count>0; --count)
 			dat.push_back('0');
 		for(auto& ch:tmp)
 			dat.push_back(ch);
-		tmp=std::to_string(pic.get_height());
-		for(int count=4-tmp.size();count>0;--count)
+		tmp=std::to_string(pic->get_height());
+		for(int count=4-tmp.size(); count>0; --count)
 			dat.push_back('0');
 		for(auto& ch:tmp)
 			dat.push_back(ch);
-		for(std::size_t y=0;y<pic.get_height();++y)
-		{
-			for(std::size_t x=0;x<pic.get_width();++x)
-			{
-				const pixel& pix=pic.get_pixel({x,y});
+		for(std::size_t y=0; y<pic->get_height(); ++y) {
+			for(std::size_t x=0; x<pic->get_width(); ++x) {
+				const pixel& pix=pic->get_pixel(x,y);
 				if(pix.is_bright())
 					dat.push_back('0');
 				else
@@ -161,57 +142,55 @@ namespace darwin {
 					dat.push_back('0');
 				else
 					dat.push_back('1');
-				switch(pix.get_front_color())
-				{
-					case colors::white:
+				switch(pix.get_front_color()) {
+				case colors::white:
 					dat.push_back('1');
 					break;
-					case colors::black:
+				case colors::black:
 					dat.push_back('2');
 					break;
-					case colors::red:
+				case colors::red:
 					dat.push_back('3');
 					break;
-					case colors::green:
+				case colors::green:
 					dat.push_back('4');
 					break;
-					case colors::blue:
+				case colors::blue:
 					dat.push_back('5');
 					break;
-					case colors::pink:
+				case colors::pink:
 					dat.push_back('6');
 					break;
-					case colors::yellow:
+				case colors::yellow:
 					dat.push_back('7');
 					break;
-					case colors::cyan:
+				case colors::cyan:
 					dat.push_back('8');
 					break;
 				}
-				switch(pix.get_back_color())
-				{
-					case colors::white:
+				switch(pix.get_back_color()) {
+				case colors::white:
 					dat.push_back('1');
 					break;
-					case colors::black:
+				case colors::black:
 					dat.push_back('2');
 					break;
-					case colors::red:
+				case colors::red:
 					dat.push_back('3');
 					break;
-					case colors::green:
+				case colors::green:
 					dat.push_back('4');
 					break;
-					case colors::blue:
+				case colors::blue:
 					dat.push_back('5');
 					break;
-					case colors::pink:
+				case colors::pink:
 					dat.push_back('6');
 					break;
-					case colors::yellow:
+				case colors::yellow:
 					dat.push_back('7');
 					break;
-					case colors::cyan:
+				case colors::cyan:
 					dat.push_back('8');
 					break;
 				}
@@ -219,13 +198,5 @@ namespace darwin {
 			}
 		}
 		return true;
-	}
-	void print_screen(const drawable& pic)
-	{
-		static std::deque<char> file_buffer;
-		darwin::serial_picture(pic,file_buffer);
-		std::ofstream out("./darwin_screen_shot.cdpf");
-		for(auto&it:file_buffer)
-			out<<it;
 	}
 }

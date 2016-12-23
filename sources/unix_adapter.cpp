@@ -101,7 +101,7 @@ namespace darwin {
 			const std::size_t sw(get_terminal_width()),sh(get_terminal_height());
 			for(std::size_t y=0; y<mDrawable.get_height()&&y<sh; ++y) {
 				for(std::size_t x=0; x<mDrawable.get_width()&&x<sw; ++x) {
-					const pixel& pix=mDrawable.get_pixel({x,y});
+					const pixel& pix=mDrawable.get_pixel(x,y);
 					std::string cmd="\e[0m\e[";
 					switch(pix.get_front_color()) {
 					case colors::white:

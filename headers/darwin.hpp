@@ -34,7 +34,7 @@ namespace darwin {
 				timer::delay(period-spend);
 		}
 	};
-	class darwin final {
+	class darwin_rt final {
 	protected:
 		timer_t m_time_out=1000;
 		module_adapter* m_module=nullptr;
@@ -42,11 +42,11 @@ namespace darwin {
 		bool wait_for_module();
 		bool wait_for_platform();
 	public:
-		darwin()=delete;
-		darwin(module_adapter* module):m_module(module) {}
-		darwin(const darwin&)=delete;
-		darwin(darwin&&) noexcept=delete;
-		~darwin();
+		darwin_rt()=delete;
+		darwin_rt(module_adapter* module):m_module(module) {}
+		darwin_rt(const darwin_rt&)=delete;
+		darwin_rt(darwin_rt&&) noexcept=delete;
+		~darwin_rt();
 		void load(const std::string&);
 		void exit(int);
 		status get_state() const noexcept
@@ -65,23 +65,38 @@ namespace darwin {
 		{
 			return m_platform;
 		}
+		drawable* get_drawable() noexcept
+		{
+			if(m_platform==nullptr) return nullptr;
+			return m_platform->get_drawable();
+		}
+		results fit_drawable() noexcept
+		{
+			if(m_platform==nullptr) return results::failure;
+			return m_platform->fit_drawable();
+		}
+		results update_drawable() noexcept
+		{
+			if(m_platform==nullptr) return results::failure;
+			return m_platform->update_drawable();
+		}
 	};
 }
-bool darwin::darwin::wait_for_module()
+bool darwin::darwin_rt::wait_for_module()
 {
 	if(m_module==nullptr) return false;
 	for(timer_t nt=timer::time(); m_module->get_state()==status::busy&&timer::time()-nt<=m_time_out;);
 	if(m_module->get_state()==status::busy) return false;
 	else return true;
 }
-bool darwin::darwin::wait_for_platform()
+bool darwin::darwin_rt::wait_for_platform()
 {
 	if(m_platform==nullptr) return false;
 	for(timer_t nt=timer::time(); m_platform->get_state()==status::busy&&timer::time()-nt<=m_time_out;);
 	if(m_platform->get_state()==status::busy) return false;
 	else return true;
 }
-darwin::darwin::~darwin()
+darwin::darwin_rt::~darwin_rt()
 {
 	if(m_platform!=nullptr)
 		if(wait_for_platform()&&m_platform->get_state()==status::ready)
@@ -90,17 +105,17 @@ darwin::darwin::~darwin()
 		if(wait_for_module()&&m_module->get_state()==status::ready)
 			m_module->free_module();
 }
-void darwin::darwin::load(const std::string& file)
+void darwin::darwin_rt::load(const std::string& file)
 {
-	if(get_state()!=status::leisure) throw std::logic_error(__func__);
+	if(get_state()!=status::leisure) Darwin_Error("Adapter Busy.");
 	if(wait_for_module()&&m_module->get_state()==status::leisure) {
-		if(m_module->load_module(file)==results::failure) throw std::logic_error(__func__);
+		if(m_module->load_module(file)==results::failure) Darwin_Error("Adapter returns failure.");
 	} else
-		throw std::logic_error(__func__);
+		Darwin_Error("Adapter Busy.");
 	m_platform=m_module->get_platform_adapter();
 	m_platform->init();
 }
-void darwin::darwin::exit(int code=0)
+void darwin::darwin_rt::exit(int code=0)
 {
 	if(m_platform!=nullptr)
 		if(wait_for_platform()&&m_platform->get_state()==status::ready)
@@ -121,3 +136,15 @@ void darwin::darwin::exit(int code=0)
 #include "./unix_module.hpp"
 #endif
 #endif
+namespace darwin {
+	static std::string screen_shot_path="./darwin_screen_shot.cdpf";
+	void print_screen()
+	{
+		static std::deque<char> file_buffer;
+		serial_picture(runtime.get_drawable(),file_buffer);
+		outfs out(screen_shot_path);
+		for(auto&it:file_buffer)
+			out.printf("%c",it);
+		out.flush();
+	}
+}
