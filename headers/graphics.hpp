@@ -67,8 +67,6 @@ namespace darwin {
 		{
 			return this->mHeight;
 		}
-		// 重新设置尺寸
-		// resize将令您失去所有数据，请注意备份
 		virtual void resize(std::size_t w,std::size_t h) override
 		{
 			if(w==this->mWidth&&h==this->mHeight)
@@ -78,14 +76,12 @@ namespace darwin {
 			this->mWidth=w;
 			this->mHeight=h;
 		}
-		// 填充图像
 		virtual void fill(const pixel& pix) override
 		{
 			if(this->mImage==nullptr)
 				Darwin_Error("Use of not available object.");
 			for(pixel* it=this->mImage; it!=this->mImage+this->mWidth*this->mHeight; ++it) *it=pix;
 		}
-		// 清空图像
 		virtual void clear() override
 		{
 			if(this->mImage!=nullptr) {
@@ -93,7 +89,6 @@ namespace darwin {
 				this->mImage=new pixel[mHeight*mWidth];
 			}
 		}
-		// 通过二维坐标访问图像
 		virtual const pixel& get_pixel(std::size_t x,std::size_t y) const override
 		{
 			if(this->mImage==nullptr)
@@ -102,7 +97,6 @@ namespace darwin {
 				Darwin_Error("Out of range.");
 			return this->mImage[y*this->mWidth+x];
 		}
-		// 单点绘制函数
 		virtual void draw_pixel(int x,int y,const pixel& pix) override
 		{
 			if(this->mImage==nullptr)

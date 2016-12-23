@@ -127,7 +127,7 @@ void darwin::darwin_rt::exit(int code=0)
 	m_module=nullptr;
 	std::exit(code);
 }
-#if defined(__DFUNIX__)
+#if defined(DARWIN_FORCE_UNIX)
 #include "./unix_module.hpp"
 #else
 #if defined(__WIN32__) || defined(WIN32)

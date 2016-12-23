@@ -56,7 +56,7 @@ namespace darwin {
 	class debugger final {
 		static outfs out;
 	public:
-#ifdef DARWIN_STRICT_MOD
+#ifdef DARWIN_STRICT_CHECK
 		static constexpr bool strict=true;
 #else
 		static constexpr bool strict=false;
