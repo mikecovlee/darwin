@@ -87,10 +87,15 @@ namespace darwin {
 			out.flush();
 			std::terminate();
 		}
+		static void log_path(const char* path)
+		{
+			out.close();
+			out.open(path);
+		}
 	};
-	static std::string log_path="./darwin_runtime.log";
-	outfs debugger::out(log_path);
+	outfs debugger::out("./darwin_runtime.log");
 }
 #define Darwin_Log(msg) darwin::debugger::log(__FILE__,__LINE__,__func__,msg);
 #define Darwin_Warning(msg) darwin::debugger::warning(__FILE__,__LINE__,__func__,msg);
 #define Darwin_Error(msg) darwin::debugger::error(__FILE__,__LINE__,__func__,msg);
+#define Darwin_Set_Log_Path(path) darwin::debugger::log_path(path);
