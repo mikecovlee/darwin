@@ -107,14 +107,22 @@ namespace darwin {
 			this->draw_pixel(p0x,p0y,pix);
 			this->draw_pixel(p1x,p1y,pix);
 		}
-		virtual void draw_picture(int col,int row,const drawable& img) {
-			if(!this->usable()||!img.usable())
+		virtual void draw_picture(int col,int row,const drawable& pic) {
+			if(!this->usable()||!pic.usable())
 				Darwin_Error("Use of not available object.");
 			if(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1)
 				Darwin_Warning("Out of range.");
-			for(int r=row; r<this->get_height()&&r-row<img.get_height(); ++r)
-				for(int c=col; c<this->get_width()&&c-col<img.get_width(); ++c)
-					if(r-row>=0&&c-col>=0) this->draw_pixel(r,c,img.get_pixel(r-row,c-col));
+			int y0(row>=0?row:0),y1(row>=0?0:-row);
+			while(y0<this->get_height()&&y1<pic.get_height()) {
+				int x0(col>=0?col:0),x1(col>=0?0:-col);
+				while(x0<this->get_width()&&x1<pic.get_width()) {
+					this->draw_pixel(x0,y0,pic.get_pixel(x1,y1));
+					++x0;
+					++x1;
+				}
+				++y0;
+				++y1;
+			}
 		}
 	};
 }

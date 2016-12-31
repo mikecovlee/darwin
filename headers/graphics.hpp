@@ -111,6 +111,7 @@ namespace darwin {
 		for(std::size_t y=0; y<pic->get_height(); ++y) {
 			for(std::size_t x=0; x<pic->get_width(); ++x) {
 				const pixel& pix=pic->get_pixel(x,y);
+				dat.push_back(pix.get_char());
 				if(pix.is_bright())
 					dat.push_back('0');
 				else
@@ -171,9 +172,89 @@ namespace darwin {
 					dat.push_back('8');
 					break;
 				}
-				dat.push_back(pix.get_char());
 			}
 		}
 		return true;
+	}
+	bool unserial_picture(drawable* pic,const std::deque<char>& dat)
+	{
+		if(pic==nullptr) return false;
+		std::string tmp;
+		tmp= {dat[0],dat[1],dat[2],dat[3]};
+		std::size_t w=std::stoul(tmp);
+		tmp= {dat[4],dat[5],dat[6],dat[7]};
+		std::size_t h=std::stoul(tmp);
+		pic->resize(w,h);
+		pixel pix;
+		int x(0),y(0);
+		for(std::size_t i=8; i<dat.size(); i+=5) {
+			pix.set_char(dat[i]);
+			if(dat[i+1]=='0')
+				pix.set_bright(true);
+			else
+				pix.set_bright(false);
+			if(dat[i+2]=='0')
+				pix.set_underline(true);
+			else
+				pix.set_underline(false);
+			switch(dat[i+3]) {
+			case '1':
+				pix.set_front_color(colors::white);
+				break;
+			case '2':
+				pix.set_front_color(colors::black);
+				break;
+			case '3':
+				pix.set_front_color(colors::red);
+				break;
+			case '4':
+				pix.set_front_color(colors::green);
+				break;
+			case '5':
+				pix.set_front_color(colors::blue);
+				break;
+			case '6':
+				pix.set_front_color(colors::pink);
+				break;
+			case '7':
+				pix.set_front_color(colors::yellow);
+				break;
+			case '8':
+				pix.set_front_color(colors::cyan);
+				break;
+			}
+			switch(dat[i+4]) {
+			case '1':
+				pix.set_back_color(colors::white);
+				break;
+			case '2':
+				pix.set_back_color(colors::black);
+				break;
+			case '3':
+				pix.set_back_color(colors::red);
+				break;
+			case '4':
+				pix.set_back_color(colors::green);
+				break;
+			case '5':
+				pix.set_back_color(colors::blue);
+				break;
+			case '6':
+				pix.set_back_color(colors::pink);
+				break;
+			case '7':
+				pix.set_back_color(colors::yellow);
+				break;
+			case '8':
+				pix.set_back_color(colors::cyan);
+				break;
+			}
+			pic->draw_pixel(x,y,pix);
+			if(x==w-1) {
+				x=0;
+				++y;
+			} else
+				++x;
+		}
 	}
 }

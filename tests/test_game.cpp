@@ -10,7 +10,7 @@ int main()
 	runtime.load("./darwin.module");
 	auto adapter=runtime.get_adapter();
 	auto pic=runtime.get_drawable();
-	sync_clock clock(60);
+	sync_clock clock(30);
 	std::size_t x(0),y(0);
 	long bx(0),by(0);
 	bool x_add(true),y_add(true);
