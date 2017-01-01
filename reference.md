@@ -77,4 +77,24 @@ int main()
 1. `bright`（高亮）
 2. `underline`（下划线）
 
-###2：像素类
+###2：像素类（`darwin::pixel`）
+特点：**不可继承，非线程安全**
+####构造函数
+`pixel::pixel()` 构造一个默认的实例（空格，无高亮，无下划线，前白后黑）  。
+`pixel::pixel(const pixel&)` 复制构造。
+`pixel::pixel(char,bool,bool,colors,colors)` 自定义构造，五个参数分别指定字符，是否高亮，是否下划线，前景色和背景色。
+####成员函数
+`void set_char(char)` 设置pixel的字符。  
+`char get_char() const` 获取pixel的字符。  
+`void set_front_color(colors)` 设置pixel的前景色。  
+`colors get_front_color() const` 获取pixel的前景色。  
+`void set_back_color(colors)` 设置pixel的背景色。  
+`colors get_back_color() const` 获取pixel的背景色。  
+`void set_colors(const std::array<colors,2>&)` 批量设置pixel的颜色，数组第一个元素为前景色，第二个元素是背景色。  
+`const std::array<colors,2>& get_colors() const` 批量获取pixel的颜色，数组第一个元素为前景色，第二个元素是背景色。  
+`void set_bright(bool)` 设置高亮属性，`true`为开启，`false`为关闭。  
+`bool is_bright() const` 获取高亮属性的状态。  
+`void set_underline(bool)` 设置下划线属性，`true`为开启，`false`为关闭。  
+`void is_underline() const` 获取下划线属性的状态。  
+`void set_attris(const std::array<bool,2>&)` 批量设置pixel的属性，数组第一个元素为高亮，第二个元素为下划线。  
+`const std::array<bool,2>& get_attris() const` 批量获取pixel的属性，数组第一个元素为高亮，第二个元素为下划线。  
