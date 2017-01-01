@@ -78,6 +78,7 @@ namespace darwin {
 	};
 	class drawable {
 	public:
+		static double draw_line_precision;
 		drawable()=default;
 		drawable(const drawable&)=default;
 		virtual ~drawable()=default;
@@ -101,7 +102,7 @@ namespace darwin {
 			if(p0x<0||p0y<0||p1x<0||p1y<0||p0x>this->get_width()-1||p0y>this->get_height()-1||p1x>this->get_width()-1||p1y>this->get_height()-1)
 				Darwin_Warning("Out of range.");
 			long w(p1x-p0x),h(p1y-p0y);
-			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2)));
+			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2))*draw_line_precision);
 			for(double c=0; c<=1; c+=1.0/distance)
 				this->draw_pixel(static_cast<int>(p0x+w*c),static_cast<int>(p0y+h*c),pix);
 			this->draw_pixel(p0x,p0y,pix);
@@ -125,4 +126,5 @@ namespace darwin {
 			}
 		}
 	};
+	double drawable::draw_line_precision=1.5;
 }
