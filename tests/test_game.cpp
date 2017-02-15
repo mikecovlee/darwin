@@ -1,8 +1,39 @@
+#define DARWIN_IGNORE_WARNING
 #define DARWIN_FORCE_BUILTIN
 #include "../headers/darwin.hpp"
+#include <cmath>
 
-int bw=20;
-int fj=3;
+struct sandbox {
+	double gravity=9.8;
+	double air_drop=1;
+	double delta_time=0.2;
+} world;
+
+struct entity {
+	double mass=0.1;
+	double size=0.01;
+	double speed_x=10;
+	double speed_y=0;
+	double posit_x=0;
+	double posit_y=0;
+} ball;
+
+void run()
+{
+	double ax(0),ay(0);
+	if(ball.speed_x>0)
+		ax=-(world.air_drop*ball.size*ball.speed_x)/ball.mass;
+	if(ball.speed_y>0)
+		ay=(ball.mass*world.gravity-world.air_drop*ball.size*ball.speed_y)/ball.mass;
+	if(ball.speed_y==0)
+		ay=(ball.mass*world.gravity)/ball.mass;
+	if(ball.speed_y<0)
+		ay=(ball.mass*world.gravity+std::abs(world.air_drop*ball.size*ball.speed_y))/ball.mass;
+	ball.posit_x+=ball.speed_x*world.delta_time+0.5*ax*std::pow(world.delta_time,2);
+	ball.posit_y+=ball.speed_y*world.delta_time+0.5*ay*std::pow(world.delta_time,2);
+	ball.speed_x+=ax*world.delta_time;
+	ball.speed_y+=ay*world.delta_time;
+}
 
 int main()
 {
@@ -11,67 +42,14 @@ int main()
 	auto adapter=runtime.get_adapter();
 	auto pic=runtime.get_drawable();
 	sync_clock clock(30);
-	std::size_t x(0),y(0);
-	long bx(0),by(0);
-	bool x_add(true),y_add(true);
-	int fc=0;
 	while(true) {
-		++fc;
-		if(adapter->is_kb_hit()) {
-			switch(adapter->get_kb_hit()) {
-			case 'w':
-				--by;
-				break;
-			case 's':
-				++by;
-				break;
-			case 'c':
-				print_screen();
-				break;
-			case 'a':
-				--bx;
-				break;
-			case 'd':
-				++bx;
-				break;
-			}
-		}
 		clock.reset();
 		runtime.fit_drawable();
-		std::size_t cx((pic->get_width()-bw)*0.5+bx),cy(pic->get_height()*0.5-1+by);
 		pic->clear();
-		if(fc==fj) {
-			if(x_add) ++x;
-			else --x;
-			if(y_add) ++y;
-			else --y;
-		}
-		pic->draw_pixel(x,y,pixel(' ', true,false, colors::blue,colors::white));
-		if(fc==fj) {
-			if(x==0) x_add=true;
-			if(y==0) y_add=true;
-			if(x==pic->get_width()-1) x_add=false;
-			if(y==pic->get_height()-1) y_add=false;
-			if((x==cx-1 || x==cx+bw)&&y==cx)
-				x_add=x_add?false:true;
-			else if(cx<=x&&x<=cx+bw-1&&(y==cy-1 || y==cy+1))
-				y_add=y_add?false:true;
-			else if(x==cx-1&&y==cy-1&&x_add&&y_add) {
-				x_add=false;
-				y_add=false;
-			} else if(x==cx-1&&y==cy+1&&x_add&&!y_add) {
-				x_add=false;
-				y_add=true;
-			} else if(x==cx+bw&&y==cy-1&&!x_add&&y_add) {
-				x_add=true;
-				y_add=false;
-			} else if(x==cx+bw&&y==cy+1&&!x_add&&!y_add) {
-				x_add=true;
-				y_add=true;
-			}
-			fc=0;
-		}
-		pic->draw_line(cx,cy, cx+bw,cy,pixel('#', true,false, colors::white,colors::white));
+		if(ball.posit_x<0||ball.posit_x>pic->get_width()-1) ball.speed_x=-ball.speed_x;
+		if(ball.posit_y<0||ball.posit_y>pic->get_height()-1) ball.speed_y=-ball.speed_y;
+		run();
+		pic->draw_pixel(ball.posit_x,ball.posit_y,pixel('@', true,false, colors::blue,colors::white));
 		runtime.update_drawable();
 		clock.sync();
 	}
