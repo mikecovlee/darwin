@@ -4,15 +4,15 @@
 #include <cmath>
 
 struct sandbox {
-	double gravity=9.8;
-	double air_drop=1;
-	double delta_time=0.2;
+	double gravity=10;
+	double air_drop=5;
+	double delta_time=0.1;
 } world;
 
 struct entity {
-	double mass=0.1;
+	double mass=0.5;
 	double size=0.01;
-	double speed_x=10;
+	double speed_x=15;
 	double speed_y=0;
 	double posit_x=0;
 	double posit_y=0;
@@ -46,10 +46,13 @@ int main()
 		clock.reset();
 		runtime.fit_drawable();
 		pic->clear();
-		if(ball.posit_x<0||ball.posit_x>pic->get_width()-1) ball.speed_x=-ball.speed_x;
-		if(ball.posit_y<0||ball.posit_y>pic->get_height()-1) ball.speed_y=-ball.speed_y;
+		
+		if(ball.posit_x<0) ball.speed_x=std::abs(ball.speed_x);
+		if(ball.posit_y<0) ball.speed_y=std::abs(ball.speed_y);
+		if(ball.posit_x>pic->get_width()-1) ball.speed_x=-std::abs(ball.speed_x);
+		if(ball.posit_y>pic->get_height()-1) ball.speed_y=-std::abs(ball.speed_y);
 		run();
-		pic->draw_pixel(ball.posit_x,ball.posit_y,pixel('@', true,false, colors::blue,colors::white));
+		pic->draw_pixel(ball.posit_x,ball.posit_y,pixel('@', true,false, colors::white, colors::black));
 		runtime.update_drawable();
 		clock.sync();
 	}
