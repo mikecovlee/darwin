@@ -39,14 +39,13 @@ int main()
 {
 	using namespace darwin;
 	runtime.load("./darwin.module");
-	auto adapter=runtime.get_adapter();
 	auto pic=runtime.get_drawable();
 	sync_clock clock(30);
 	while(true) {
 		clock.reset();
 		runtime.fit_drawable();
 		pic->clear();
-		
+		pic->draw_string(0,0,"Simple Sandbox",pixel(' ', true,false, colors::black, colors::white));
 		if(ball.posit_x<0) ball.speed_x=std::abs(ball.speed_x);
 		if(ball.posit_y<0) ball.speed_y=std::abs(ball.speed_y);
 		if(ball.posit_x>pic->get_width()-1) ball.speed_x=-std::abs(ball.speed_x);

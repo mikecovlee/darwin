@@ -4,12 +4,11 @@ int main()
 {
 	darwin::runtime.load("./darwin.module");
 	auto pic=darwin::runtime.get_drawable();
-	auto adapter=darwin::runtime.get_adapter();
 	darwin::sync_clock clock(30);
 	int x0(0),y0(0),x1(1),y1(1);
 	while(true) {
-		if(adapter->is_kb_hit()) {
-			switch(adapter->get_kb_hit()) {
+		if(darwin::runtime.is_kb_hit()) {
+			switch(darwin::runtime.get_kb_hit()) {
 			case 'w':
 				--y0;
 				break;
