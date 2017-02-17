@@ -133,6 +133,51 @@ namespace darwin {
 				for(int cx=0;cx<w;w>0?++cx:--cx)
 					this->draw_pixel(x+cx,y+cy,pix);
 		}
+		virtual void fill_triangle(int x1,int y1,int x2,int y2,int x3,int y3,const pixel& pix)
+		{
+			if(!this->usable())
+				Darwin_Error("Use of not available object.");
+			int v1x(x2-x1),v1y(y2-y1),v2x(x3-x2),v2y(y3-y2);
+			if(v1x*v2y-v2x*v1y==0)
+				Darwin_Error("Three points in a line.");
+			if(y2<y1)
+			{
+				std::swap(y1,y2);
+				std::swap(x1,x2);
+			}
+			if(y3<y2)
+			{
+				std::swap(y2,y3);
+				std::swap(x2,x3);
+			}
+			if(y2<y1)
+			{
+				std::swap(y1,y2);
+				std::swap(x1,x2);
+			}
+			if(y1==y2)
+			{
+				double k1(double(x3-x1)/double(y3-y1)),k2(double(x3-x2)/double(y3-y2));
+				for(int y=0;y<y3-y2;++y)
+					this->draw_line(x1+k1*y,y1+y,x2+k2*y,y2+y,pix);
+				this->draw_pixel(x3,y3,pix);
+			}else if(y2==y3){
+				double k1(double(x3-x1)/double(y3-y1)),k2(double(x2-x1)/double(y2-y1));
+				for(int y=1;y<=y2-y1;++y)
+					this->draw_line(x1+k1*y,y1+y,x1+k2*y,y1+y,pix);
+				this->draw_pixel(x1,y1,pix);
+			}else{
+				double k1(double(x3-x1)/double(y3-y1)),k2(double(x3-x2)/double(y3-y2)),k3(double(x2-x1)/double(y2-y1));
+				for(int y=1;y<y3-y1;++y)
+				{
+					if(y<y2-y1)
+						this->draw_line(x1+k1*y,y1+y,x1+k3*y,y1+y,pix);
+					else
+						this->draw_line(x1+k1*y,y1+y,x2+k2*(y-y2),y1+y,pix);
+				}
+				this->draw_pixel(x3,y3,pix);
+			}
+		}
 		virtual void draw_string(int x,int y,const std::string& str,const pixel& pix)
 		{
 			if(!this->usable())
