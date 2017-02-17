@@ -1,5 +1,5 @@
 #define DARWIN_FORCE_BUILTIN
-#define DARWIN_IGNORE_WARNING
+#define DARWIN_DISABLE_LOG
 #include "../headers/darwin.hpp"
 #include <fstream>
 #include <cstdio>
