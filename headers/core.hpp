@@ -158,24 +158,21 @@ namespace darwin {
 			if(y1==y2)
 			{
 				double k1(double(x3-x1)/double(y3-y1)),k2(double(x3-x2)/double(y3-y2));
-				for(int y=0;y<y3-y2;++y)
+				for(int y=0;y<=y3-y2;++y)
 					this->draw_line(x1+k1*y,y1+y,x2+k2*y,y2+y,pix);
-				this->draw_pixel(x3,y3,pix);
 			}else if(y2==y3){
 				double k1(double(x3-x1)/double(y3-y1)),k2(double(x2-x1)/double(y2-y1));
-				for(int y=1;y<=y2-y1;++y)
+				for(int y=0;y<=y2-y1;++y)
 					this->draw_line(x1+k1*y,y1+y,x1+k2*y,y1+y,pix);
-				this->draw_pixel(x1,y1,pix);
 			}else{
 				double k1(double(x3-x1)/double(y3-y1)),k2(double(x3-x2)/double(y3-y2)),k3(double(x2-x1)/double(y2-y1));
-				for(int y=1;y<y3-y1;++y)
+				for(int y=0;y<=y3-y1;++y)
 				{
 					if(y<y2-y1)
 						this->draw_line(x1+k1*y,y1+y,x1+k3*y,y1+y,pix);
 					else
-						this->draw_line(x1+k1*y,y1+y,x2+k2*(y-y2),y1+y,pix);
+						this->draw_line(x1+k1*y,y1+y,x2+k2*(y-(y2-y1)),y1+y,pix);
 				}
-				this->draw_pixel(x3,y3,pix);
 			}
 		}
 		virtual void draw_string(int x,int y,const std::string& str,const pixel& pix)
