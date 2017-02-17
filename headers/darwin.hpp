@@ -55,16 +55,21 @@ namespace darwin {
 		void set_time_out(timer_t tl) noexcept {
 			m_time_out=tl;
 		}
-		platform_adapter* get_adapter() noexcept {
-			return m_platform;
+		virtual bool is_kb_hit() noexcept {
+			if(m_platform==nullptr) Darwin_Error("Adapter is not ready.");
+			return m_platform->is_kb_hit();
 		}
-		drawable* get_drawable() noexcept {
-			if(m_platform==nullptr) return nullptr;
-			return m_platform->get_drawable();
+		virtual int get_kb_hit() noexcept {
+			if(m_platform==nullptr) Darwin_Error("Adapter is not ready.");
+			return m_platform->get_kb_hit();
 		}
 		results fit_drawable() noexcept {
 			if(m_platform==nullptr) return results::failure;
 			return m_platform->fit_drawable();
+		}
+		drawable* get_drawable() noexcept {
+			if(m_platform==nullptr) return nullptr;
+			return m_platform->get_drawable();
 		}
 		results update_drawable() noexcept {
 			if(m_platform==nullptr) return results::failure;

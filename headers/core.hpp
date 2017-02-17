@@ -108,6 +108,44 @@ namespace darwin {
 			this->draw_pixel(p0x,p0y,pix);
 			this->draw_pixel(p1x,p1y,pix);
 		}
+		virtual void draw_rect(int x,int y,int w,int h,const pixel& pix) {
+			if(!this->usable())
+				Darwin_Error("Use of not available object.");
+			if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+w>this->get_width()||y+h>this->get_height())
+				Darwin_Warning("Out of range.");
+			for(int i=0;i<w;w>0?++i:--i)
+			{
+				this->draw_pixel(x+i,y,pix);
+				this->draw_pixel(x+i,y+h-1,pix);
+			}
+			for(int i=1;i<h-1;h>0?++i:--i)
+			{
+				this->draw_pixel(x,y+i,pix);
+				this->draw_pixel(x+w-1,y+i,pix);
+			}
+		}
+		virtual void fill_rect(int x,int y,int w,int h,const pixel& pix) {
+			if(!this->usable())
+				Darwin_Error("Use of not available object.");
+			if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+w>this->get_width()||y+h>this->get_height())
+				Darwin_Warning("Out of range.");
+			for(int cy=0;cy<h;h>0?++cy:--cy)
+				for(int cx=0;cx<w;w>0?++cx:--cx)
+					this->draw_pixel(x+cx,y+cy,pix);
+		}
+		virtual void draw_string(int x,int y,const std::string& str,const pixel& pix)
+		{
+			if(!this->usable())
+				Darwin_Error("Use of not available object.");
+			if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+str.size()>this->get_width())
+				Darwin_Warning("Out of range.");
+			pixel p=pix;
+			for(int i=0;i<str.size();++i)
+			{
+				p.set_char(str.at(i));
+				this->draw_pixel(x+i,y,p);
+			}
+		}
 		virtual void draw_picture(int col,int row,const drawable& pic) {
 			if(!this->usable()||!pic.usable())
 				Darwin_Error("Use of not available object.");
