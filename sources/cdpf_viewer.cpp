@@ -28,8 +28,8 @@ int main(int arg_size,char** arg_array)
 	bool running=true;
 	sync_clock clock(30);
 	while(running) {
-		if(runtime.get_adapter()->is_kb_hit()) {
-			switch(runtime.get_adapter()->get_kb_hit()) {
+		if(runtime.is_kb_hit()) {
+			switch(runtime.get_kb_hit()) {
 			case 'w':
 				--y;
 				break;
@@ -54,12 +54,9 @@ int main(int arg_size,char** arg_array)
 		dpic->draw_line(0,0,dpic->get_width()-1,0,pixel(' ',true,false,colors::blue,colors::blue));
 		dpic->draw_line(0,1,dpic->get_width()-1,1,pixel(' ',true,false,colors::cyan,colors::cyan));
 		dpic->draw_line(0,dpic->get_height()-1,dpic->get_width()-1,dpic->get_height()-1,pixel(' ',true,false,colors::blue,colors::blue));
-		for(int i=0; i<head.size(); ++i)
-			dpic->draw_pixel(i,0,pixel(head[i],true,false,colors::white,colors::blue));
-		for(int i=0; i<help.size(); ++i)
-			dpic->draw_pixel(i,1,pixel(help[i],true,false,colors::white,colors::cyan));
-		for(int i=0; i<info.size(); ++i)
-			dpic->draw_pixel(i,dpic->get_height()-1,pixel(info[i],true,false,colors::white,colors::blue));
+		dpic->draw_string(0,0,head,pixel(' ',true,false,colors::white,colors::blue));
+		dpic->draw_string(0,1,help,pixel(' ',true,false,colors::white,colors::cyan));
+		dpic->draw_string(0,dpic->get_height()-1,info,pixel(' ',true,false,colors::white,colors::blue));
 		runtime.update_drawable();
 		clock.sync();
 	}
