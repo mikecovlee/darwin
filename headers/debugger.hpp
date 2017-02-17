@@ -44,6 +44,7 @@ namespace darwin {
 			}
 		}
 	};
+#ifndef DARWIN_DISABLE_LOG
 	class debugger final {
 		static outfs out;
 	public:
@@ -85,3 +86,9 @@ namespace darwin {
 #define Darwin_Warning(msg) darwin::debugger::warning(__FILE__,__LINE__,__func__,msg);
 #define Darwin_Error(msg) darwin::debugger::error(__FILE__,__LINE__,__func__,msg);
 #define Darwin_Set_Log_Path(path) darwin::debugger::log_path(path);
+#else
+#define Darwin_Log(msg)
+#define Darwin_Warning(msg)
+#define Darwin_Error(msg) std::terminate();
+#define Darwin_Set_Log_Path(path)
+#endif
