@@ -31,10 +31,16 @@ namespace darwin {
 		pixel(const pixel&)=default;
 		pixel(char ch,bool bright,bool underline,colors fcolor,colors bcolor):mChar(ch),mAttris( {
 			bright,underline
-		}),mColors({fcolor,bcolor}) {}
+		}),mColors({fcolor,bcolor}) {
+			if(ch<=31||ch>=127)
+				mChar='\?';
+		}
 		~pixel()=default;
 		void set_char(char c) {
-			mChar=c;
+			if(c>31&&c<127)
+				mChar=c;
+			else
+				mChar='\?';
 		}
 		char get_char() const {
 			return mChar;
