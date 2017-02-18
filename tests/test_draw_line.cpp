@@ -1,4 +1,5 @@
 #define DARWIN_FORCE_BUILTIN
+#define DARWIN_DISABLE_LOG
 #include "../headers/darwin.hpp"
 int main()
 {
