@@ -13,15 +13,13 @@ namespace darwin {
 	public:
 		unix_module_adapter()=default;
 		virtual ~unix_module_adapter()=default;
-		virtual status get_state() const noexcept override
-		{
+		virtual status get_state() const noexcept override {
 			if(m_adapter!=nullptr)
 				return status::ready;
 			else
 				return status::leisure;
 		}
-		virtual results load_module(const std::string& path) noexcept override
-		{
+		virtual results load_module(const std::string& path) noexcept override {
 			signal(SIGSEGV,handle_segfault);
 			signal(SIGINT,force_exit);
 			signal(SIGABRT,force_exit);
@@ -36,8 +34,7 @@ namespace darwin {
 			if(m_adapter==nullptr) return results::failure;
 			return results::success;
 		}
-		virtual results free_module() noexcept override
-		{
+		virtual results free_module() noexcept override {
 			signal(SIGSEGV,nullptr);
 			signal(SIGINT,nullptr);
 			signal(SIGABRT,nullptr);
@@ -48,8 +45,7 @@ namespace darwin {
 			m_adapter=nullptr;
 			return results::success;
 		}
-		virtual platform_adapter* get_platform_adapter() noexcept override
-		{
+		virtual platform_adapter* get_platform_adapter() noexcept override {
 			return this->m_adapter;
 		}
 	} dunixmodule;

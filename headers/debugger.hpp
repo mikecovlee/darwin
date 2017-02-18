@@ -10,43 +10,35 @@ namespace darwin {
 		outfs()=default;
 		outfs(const char* path):mfp(fopen(path,"w")) {}
 		outfs(const std::string& path):mfp(fopen(path.c_str(),"w")) {}
-		~outfs()
-		{
+		~outfs() {
 			if(this->mfp!=nullptr) fclose(this->mfp);
 		}
 		outfs& operator=(const outfs&)=delete;
-		operator bool() const noexcept
-		{
+		operator bool() const noexcept {
 			return this->mfp!=nullptr;
 		}
-		bool usable() const noexcept
-		{
+		bool usable() const noexcept {
 			return this->mfp!=nullptr;
 		}
-		void open(const char* path)
-		{
+		void open(const char* path) {
 			if(this->mfp==nullptr) {
 				this->mfp=fopen(path,"w");
 			}
 		}
-		void open(const std::string& path)
-		{
+		void open(const std::string& path) {
 			if(this->mfp==nullptr) {
 				this->mfp=fopen(path.c_str(),"w");
 			}
 		}
-		void close()
-		{
+		void close() {
 			if(this->mfp!=nullptr)
 				fclose(this->mfp);
 			this->mfp=nullptr;
 		}
-		template<typename...ArgsT> void printf(const char* format,ArgsT...args)
-		{
+		template<typename...ArgsT> void printf(const char* format,ArgsT...args) {
 			fprintf(this->mfp,format,args...);
 		}
-		void flush()
-		{
+		void flush() {
 			if(this->mfp!=nullptr) {
 				fflush(this->mfp);
 			}
@@ -66,12 +58,10 @@ namespace darwin {
 #else
 		static constexpr bool ignore=false;
 #endif
-		static void log(const char* file,int line,const char* func,const char* msg)
-		{
+		static void log(const char* file,int line,const char* func,const char* msg) {
 			out.printf("[Darwin Log(%ums)]:In function \"%s\"(%s:%d):%s\n",timer::time(),func,file,line,msg);
 		}
-		static void warning(const char* file,int line,const char* func,const char* msg)
-		{
+		static void warning(const char* file,int line,const char* func,const char* msg) {
 			if(ignore)
 				return;
 			out.printf("[Darwin Warning(%ums)]:In function \"%s\"(%s:%d):%s\n",timer::time(),func,file,line,msg);
@@ -80,14 +70,12 @@ namespace darwin {
 				std::terminate();
 			}
 		}
-		static void error(const char* file,int line,const char* func,const char* msg)
-		{
+		static void error(const char* file,int line,const char* func,const char* msg) {
 			out.printf("[Darwin Error(%ums)]:In function \"%s\"(%s:%d):%s\n",timer::time(),func,file,line,msg);
 			out.flush();
 			std::terminate();
 		}
-		static void log_path(const char* path)
-		{
+		static void log_path(const char* path) {
 			out.close();
 			out.open(path);
 		}

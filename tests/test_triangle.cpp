@@ -5,53 +5,41 @@ int main()
 {
 	darwin::runtime.load("./darwin.module");
 	auto pic=darwin::runtime.get_drawable();
+	darwin::runtime.fit_drawable();
 	darwin::sync_clock clock(30);
-	int x0(0),y0(0),x1(0),y1(4),x2(4),y2(4);
+	std::deque<std::array<int,2>> points= {{0,0},{int(pic->get_width()-1),0},{int(0.5*pic->get_width()),int(0.5*pic->get_height())}};
+	int focus=2;
 	while(true) {
 		if(darwin::runtime.is_kb_hit()) {
 			switch(darwin::runtime.get_kb_hit()) {
 			case 'w':
-				--y0;
+				--points[focus][1];
 				break;
 			case 's':
-				++y0;
+				++points[focus][1];
 				break;
 			case 'a':
-				--x0;
+				--points[focus][0];
 				break;
 			case 'd':
-				++x0;
+				++points[focus][0];
 				break;
-			case 'i':
-				--y1;
+			case '1':
+				focus=0;
 				break;
-			case 'k':
-				++y1;
+			case '2':
+				focus=1;
 				break;
-			case 'j':
-				--x1;
-				break;
-			case 'l':
-				++x1;
-				break;
-			case 'g':
-				--y2;
-				break;
-			case 'v':
-				++y2;
-				break;
-			case 'c':
-				--x2;
-				break;
-			case 'b':
-				++x2;
+			case '3':
+				focus=2;
 				break;
 			}
 		}
 		clock.reset();
 		darwin::runtime.fit_drawable();
 		pic->clear();
-		pic->fill_triangle(x0,y0,x1,y1,x2,y2,darwin::pixel('#',true,false,darwin::colors::white,darwin::colors::white));
+		pic->fill_triangle(points[0][0],points[0][1],points[1][0],points[1][1],points[2][0],points[2][1],darwin::pixel(' ',true,false,darwin::colors::black,darwin::colors::white));
+		pic->draw_pixel(points[focus][0],points[focus][1],darwin::pixel('#',true,false,darwin::colors::black,darwin::colors::white));
 		darwin::runtime.update_drawable();
 		clock.sync();
 	}
