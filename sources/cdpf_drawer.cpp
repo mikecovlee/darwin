@@ -176,12 +176,51 @@ public:
 			clock.sync();
 		}
 	}
+	void main()
+	{
+		auto pic=runtime.get_drawable();
+		sync_clock clock(60);
+		bool run=true;
+		mPic.fill(pixel(' ',true,false,colors::black,colors::white));
+		int cx(0),cy(0);
+		pixel pix(' ',true,false,colors::black,colors::white);
+		while(run)
+		{
+			clock.reset();
+			if(runtime.is_kb_hit()) {
+				switch(runtime.get_kb_hit()) {
+				case 's':
+					++cy;
+					break;
+				case 'w':
+					--cy;
+					break;
+				case 'd':
+					++cx;
+					break;
+				case 'a':
+					--cx;
+					break;
+				}
+			}
+			runtime.fit_drawable();
+			pic->clear();
+			pic->draw_rect(0,0,pic->get_width(),pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
+			pic->draw_string(1,0,"CDPF Drawer v1.0",pixel(' ',true,false,colors::black,colors::blue));
+			pic->draw_picture(0.5*(pic->get_width()-mPic.get_width()),0.5*(pic->get_height()-mPic.get_height()),mPic);
+			pic->draw_string(0.5*pic->get_width()+cx,0.5*pic->get_height()+cy,"->",pixel(' ',true,false,colors::white,colors::black));
+			pic->draw_pixel(0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
+			runtime.update_drawable();
+			clock.sync();
+		}
+	}
 };
 int main()
 {
 	runtime.load("./darwin.module");
 	cdpf_drawer main_prog;
 	main_prog.start();
+	main_prog.main();
 	runtime.exit(0);
 	return 0;
 }
