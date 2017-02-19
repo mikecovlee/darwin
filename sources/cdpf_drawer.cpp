@@ -64,8 +64,8 @@ public:
 							++select;
 						break;
 					case 2:
-						buff0=std::to_string(pic->get_width());
-						buff1=std::to_string(pic->get_height());
+						buff0=std::to_string(pic->get_width()-2);
+						buff1=std::to_string(pic->get_height()-2);
 						break;
 					case 3:
 						mPic.resize(std::stoi(buff0),std::stoi(buff1));
@@ -183,7 +183,7 @@ public:
 		bool run=true;
 		mPic.fill(pixel(' ',true,false,colors::black,colors::white));
 		int cx(0),cy(0);
-		pixel pix(' ',true,false,colors::black,colors::white);
+		pixel pix('@',true,false,colors::black,colors::white);
 		while(run)
 		{
 			clock.reset();
