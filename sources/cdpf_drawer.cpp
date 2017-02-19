@@ -180,6 +180,7 @@ public:
 	{
 		auto pic=runtime.get_drawable();
 		sync_clock clock(60);
+		int mode=0;
 		bool run=true;
 		mPic.fill(pixel(' ',true,false,colors::black,colors::white));
 		int cx(0),cy(0);
@@ -201,9 +202,21 @@ public:
 				case 'a':
 					--cx;
 					break;
+				case 'q':
+					mPic.draw_pixel(0.5*mPic.get_width()+cx+2,0.5*mPic.get_height()+cy,pix);
+					break;
+				case 'e':
+					mode=mode==1?0:1;
+					break;
 				}
 			}
 			runtime.fit_drawable();
+			switch(mode)
+			{
+				case 1:
+					mPic.draw_pixel(0.5*mPic.get_width()+cx+2,0.5*mPic.get_height()+cy,pix);
+					break;
+			}
 			pic->clear();
 			pic->draw_rect(0,0,pic->get_width(),pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
 			pic->draw_string(1,0,"CDPF Drawer v1.0",pixel(' ',true,false,colors::black,colors::blue));
