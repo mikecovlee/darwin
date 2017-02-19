@@ -181,14 +181,14 @@ public:
 		auto pic=runtime.get_drawable();
 		sync_clock clock(60);
 		int mode=0;
+
 		bool fmod=false;
 		std::deque<std::array<int,2>> vertex;
 		bool run=true;
 		mPic.fill(pixel(' ',true,false,colors::black,colors::white));
 		int cx(0),cy(0);
 		pixel pix('@',true,false,colors::black,colors::white);
-		while(run)
-		{
+		while(run) {
 			clock.reset();
 			if(runtime.is_kb_hit()) {
 				switch(runtime.get_kb_hit()) {
@@ -208,26 +208,33 @@ public:
 					mPic.draw_pixel(0.5*mPic.get_width()+cx+2,0.5*mPic.get_height()+cy,pix);
 					break;
 				case 'e':
-					switch(mode)
-					{
-						case 0:
-						if(fmod)
-						{
+					switch(mode) {
+					case 0:
+						if(fmod) {
 							vertex.push_back({cx,cy});
 							mode=11;
 							fmod=false;
-						}else
-						mode=1;
+						} else
+							mode=1;
 						break;
-						case 1:
+					case 1:
 						mode=0;
 						break;
-						case 11:
+					case 11:
 						mPic.draw_line(0.5*mPic.get_width()+2+vertex[0][0],0.5*mPic.get_height()+vertex[0][1],0.5*mPic.get_width()+cx+2,0.5*mPic.get_height()+cy,pix);
 						vertex.clear();
 						mode=0;
 						break;
 					}
+					break;
+				case 'z':
+					mode=mode==0?2:0;
+					break;
+				case 'x':
+					mode=mode==0?3:0;
+					break;
+				case 'c':
+					mode=mode==0?4:0;
 					break;
 				case 'f':
 					fmod=fmod?false:true;
@@ -235,24 +242,40 @@ public:
 				}
 			}
 			runtime.fit_drawable();
-			switch(mode)
-			{
-				case 1:
-					mPic.draw_pixel(0.5*mPic.get_width()+cx+2,0.5*mPic.get_height()+cy,pix);
-					break;
+			switch(mode) {
+			case 1:
+				mPic.draw_pixel(0.5*mPic.get_width()+cx+2,0.5*mPic.get_height()+cy,pix);
+				break;
 			}
 			pic->clear();
 			pic->draw_picture(0.5*(pic->get_width()-mPic.get_width()),0.5*(pic->get_height()-mPic.get_height()),mPic);
-			switch(mode)
-			{
-				case 11:
-					pic->draw_line(0.5*pic->get_width()+2+vertex[0][0],0.5*pic->get_height()+vertex[0][1],0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
-					break;
+			switch(mode) {
+			case 2:
+				pic->draw_rect(0.25*pic->get_width(),0.25*pic->get_height(),0.5*pic->get_width(),0.5*pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
+				pic->fill_rect(0.25*pic->get_width()+1,0.25*pic->get_height()+1,0.5*pic->get_width()-2,0.5*pic->get_height()-2,pixel(' ',true,false,colors::black,colors::cyan));
+				pic->draw_string(0.25*pic->get_width()+1,0.25*pic->get_height(),"CDPF Drawer v1.0-Select Front Color",pixel(' ',true,false,colors::white,colors::blue));
+				pic->draw_string(0.25*pic->get_width()+4,0.5*pic->get_height(),"Please Select The Front Color(Key 1~8)",pixel(' ',true,false,colors::white,colors::cyan));
+				break;
+			case 3:
+				pic->draw_rect(0.25*pic->get_width(),0.25*pic->get_height(),0.5*pic->get_width(),0.5*pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
+				pic->fill_rect(0.25*pic->get_width()+1,0.25*pic->get_height()+1,0.5*pic->get_width()-2,0.5*pic->get_height()-2,pixel(' ',true,false,colors::black,colors::cyan));
+				pic->draw_string(0.25*pic->get_width()+1,0.25*pic->get_height(),"CDPF Drawer v1.0-Select Front Color",pixel(' ',true,false,colors::white,colors::blue));
+				pic->draw_string(0.25*pic->get_width()+4,0.5*pic->get_height(),"Please Select The Back Color(Key 1~8)",pixel(' ',true,false,colors::white,colors::cyan));
+				break;
+			case 4:
+				pic->draw_rect(0.25*pic->get_width(),0.25*pic->get_height(),0.5*pic->get_width(),0.5*pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
+				pic->fill_rect(0.25*pic->get_width()+1,0.25*pic->get_height()+1,0.5*pic->get_width()-2,0.5*pic->get_height()-2,pixel(' ',true,false,colors::black,colors::cyan));
+				pic->draw_string(0.25*pic->get_width()+1,0.25*pic->get_height(),"CDPF Drawer v1.0-Select Front Color",pixel(' ',true,false,colors::white,colors::blue));
+				pic->draw_string(0.25*pic->get_width()+4,0.5*pic->get_height(),"Please Select The Character",pixel(' ',true,false,colors::white,colors::cyan));
+				break;
+			case 11:
+				pic->draw_line(0.5*pic->get_width()+2+vertex[0][0],0.5*pic->get_height()+vertex[0][1],0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
+				break;
 			}
 			pic->draw_rect(0,0,pic->get_width(),pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
-			pic->draw_string(1,0,"CDPF Drawer v1.0",pixel(' ',true,false,colors::black,colors::blue));
+			pic->draw_string(1,0,"CDPF Drawer v1.0",pixel(' ',true,false,colors::white,colors::blue));
 			if(fmod)
-				pic->draw_string(1,pic->get_height()-1,"Function Mode",pixel(' ',true,false,colors::black,colors::blue));
+				pic->draw_string(1,pic->get_height()-1,"Function Mode",pixel(' ',true,false,colors::white,colors::blue));
 			pic->draw_string(0.5*pic->get_width()+cx,0.5*pic->get_height()+cy,"->",pixel(' ',true,false,colors::white,colors::black));
 			pic->draw_pixel(0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
 			runtime.update_drawable();
