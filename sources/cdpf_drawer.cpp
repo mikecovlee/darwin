@@ -191,7 +191,7 @@ public:
 		while(run) {
 			clock.reset();
 			if(runtime.is_kb_hit()) {
-				if(mode==4){
+				if(mode==7){
 					pix.set_char(runtime.get_kb_hit());
 					mode=0;
 				}else{
@@ -199,10 +199,10 @@ public:
 				case '1':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::white);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::white);
 						break;
 					}
@@ -211,10 +211,10 @@ public:
 				case '2':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::black);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::black);
 						break;
 					}
@@ -223,10 +223,10 @@ public:
 				case '3':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::red);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::red);
 						break;
 					}
@@ -235,10 +235,10 @@ public:
 				case '4':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::green);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::green);
 						break;
 					}
@@ -247,10 +247,10 @@ public:
 				case '5':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::blue);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::blue);
 						break;
 					}
@@ -259,10 +259,10 @@ public:
 				case '6':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::pink);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::pink);
 						break;
 					}
@@ -271,10 +271,10 @@ public:
 				case '7':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::yellow);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::yellow);
 						break;
 					}
@@ -283,10 +283,10 @@ public:
 				case '8':
 					switch(mode)
 					{
-						case 2:
+						case 5:
 						pix.set_front_color(colors::cyan);
 						break;
-						case 3:
+						case 6:
 						pix.set_back_color(colors::cyan);
 						break;
 					}
@@ -327,14 +327,36 @@ public:
 						break;
 					}
 					break;
+				case 'r':
+					switch(mode) {
+					case 0:
+						vertex.push_back({cx,cy});
+						if(fmod) {
+							mode=12;
+							fmod=false;
+						} else
+							mode=2;
+						break;
+					case 2:
+						mPic.draw_rect(0.5*mPic.get_width()+2+vertex[0][0],0.5*mPic.get_height()+vertex[0][1],cx-vertex[0][0],cy-vertex[0][1],pix);
+						vertex.clear();
+						mode=0;
+						break;
+					case 12:
+						mPic.fill_rect(0.5*mPic.get_width()+2+vertex[0][0],0.5*mPic.get_height()+vertex[0][1],cx-vertex[0][0],cy-vertex[0][1],pix);
+						vertex.clear();
+						mode=0;
+						break;
+					}
+					break;
 				case 'z':
-					mode=mode==0?2:0;
+					mode=mode==0?5:0;
 					break;
 				case 'x':
-					mode=mode==0?3:0;
+					mode=mode==0?6:0;
 					break;
 				case 'c':
-					mode=mode==0?4:0;
+					mode=mode==0?7:0;
 					break;
 				case 'f':
 					fmod=fmod?false:true;
@@ -358,18 +380,21 @@ public:
 				pic->draw_string(1,pic->get_height()-1,"Function Mode",pixel(' ',true,false,colors::white,colors::blue));
 			switch(mode) {
 			case 2:
+				pic->draw_rect(0.5*pic->get_width()+2+vertex[0][0],0.5*pic->get_height()+vertex[0][1],cx-vertex[0][0],cy-vertex[0][1],pix);
+				break;
+			case 5:
 				pic->draw_rect(0.5*(pic->get_width()-str0.size()-2),0.5*pic->get_height()-2,str0.size()+2,5,pixel(' ',true,false,colors::black,colors::blue));
 				pic->fill_rect(0.5*(pic->get_width()-str0.size()),0.5*pic->get_height()-1,str0.size(),3,pixel(' ',true,false,colors::black,colors::cyan));
 				pic->draw_string(0.5*(pic->get_width()-str0.size()-2)+1,0.5*pic->get_height()-2,"Select Front Color",pixel(' ',true,false,colors::white,colors::blue));
 				pic->draw_string(0.5*(pic->get_width()-str0.size()),0.5*pic->get_height(),str0,pixel(' ',true,false,colors::white,colors::cyan));
 				break;
-			case 3:
+			case 6:
 				pic->draw_rect(0.5*(pic->get_width()-str1.size()-2),0.5*pic->get_height()-2,str1.size()+2,5,pixel(' ',true,false,colors::black,colors::blue));
 				pic->fill_rect(0.5*(pic->get_width()-str1.size()),0.5*pic->get_height()-1,str1.size(),3,pixel(' ',true,false,colors::black,colors::cyan));
 				pic->draw_string(0.5*(pic->get_width()-str1.size()-2)+1,0.5*pic->get_height()-2,"Select Back Color",pixel(' ',true,false,colors::white,colors::blue));
 				pic->draw_string(0.5*(pic->get_width()-str1.size()),0.5*pic->get_height(),str1,pixel(' ',true,false,colors::white,colors::cyan));
 				break;
-			case 4:
+			case 7:
 				pic->draw_rect(0.5*(pic->get_width()-str2.size()-2),0.5*pic->get_height()-2,str2.size()+2,5,pixel(' ',true,false,colors::black,colors::blue));
 				pic->fill_rect(0.5*(pic->get_width()-str2.size()),0.5*pic->get_height()-1,str2.size(),3,pixel(' ',true,false,colors::black,colors::cyan));
 				pic->draw_string(0.5*(pic->get_width()-str2.size()-2)+1,0.5*pic->get_height()-2,"Select Character",pixel(' ',true,false,colors::white,colors::blue));
@@ -377,6 +402,9 @@ public:
 				break;
 			case 11:
 				pic->draw_line(0.5*pic->get_width()+2+vertex[0][0],0.5*pic->get_height()+vertex[0][1],0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
+				break;
+			case 12:
+				pic->fill_rect(0.5*pic->get_width()+2+vertex[0][0],0.5*pic->get_height()+vertex[0][1],cx-vertex[0][0],cy-vertex[0][1],pix);
 				break;
 			}
 			runtime.update_drawable();
