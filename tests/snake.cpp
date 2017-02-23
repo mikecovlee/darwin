@@ -146,6 +146,7 @@ void start()
 }
 int main()
 {
+	darwin::timer::delay(1000);
 	darwin::runtime.load("./darwin.module");
 	darwin::runtime.fit_drawable();
 	while(true) {
