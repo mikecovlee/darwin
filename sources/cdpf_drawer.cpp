@@ -31,7 +31,7 @@ public:
 					if(!buff.empty())
 						buff.pop_back();
 					break;
-				case '\n':
+				case ' ':
 					out.open(buff);
 					for(auto& c:buf)
 						out.printf("%c",c);
@@ -96,7 +96,7 @@ public:
 					if(!buff.empty())
 						buff.pop_back();
 					break;
-				case '\n':
+				case ' ':
 					func0();
 					run=false;
 					break;
@@ -152,7 +152,7 @@ public:
 					else
 						select=0;
 					break;
-				case '\n':
+				case ' ':
 					switch(select) {
 					default:
 						if(select<2)
@@ -241,7 +241,7 @@ public:
 					if(select>0)
 						--select;
 					break;
-				case '\n':
+				case ' ':
 					switch(select) {
 					case 0:
 						new_picture();
@@ -301,7 +301,7 @@ public:
 					if(select>0)
 						--select;
 					break;
-				case '\n':
+				case ' ':
 					switch(select) {
 					case 0:
 						return;
@@ -370,7 +370,7 @@ public:
 						if(!buff.empty())
 							buff.pop_back();
 						break;
-					case '\n':
+					case ' ':
 						mPic.draw_string(0.5*mPic.get_width()+2+vertex[0][0],0.5*mPic.get_height()+vertex[0][1],buff,pix);
 						buff.clear();
 						vertex.clear();
@@ -587,8 +587,6 @@ public:
 			}
 			pic->clear();
 			pic->draw_picture(0.5*(pic->get_width()-mPic.get_width()),0.5*(pic->get_height()-mPic.get_height()),mPic);
-			pic->draw_string(0.5*pic->get_width()+cx,0.5*pic->get_height()+cy,"->",pixel(' ',true,false,colors::white,colors::black));
-			pic->draw_pixel(0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
 			pic->draw_rect(0,0,pic->get_width(),pic->get_height(),pixel(' ',true,false,colors::black,colors::blue));
 			pic->draw_string(1,0,"CDPF Drawer v1.0",pixel(' ',true,false,colors::white,colors::blue));
 			if(fmod)
@@ -641,6 +639,8 @@ public:
 				pic->fill_triangle(0.5*pic->get_width()+2+vertex[0][0],0.5*pic->get_height()+vertex[0][1],0.5*pic->get_width()+2+vertex[1][0],0.5*pic->get_height()+vertex[1][1],0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
 				break;
 			}
+			pic->draw_string(0.5*pic->get_width()+cx,0.5*pic->get_height()+cy,"->",pixel(' ',true,false,colors::white,colors::black));
+			pic->draw_pixel(0.5*pic->get_width()+cx+2,0.5*pic->get_height()+cy,pix);
 			runtime.update_drawable();
 			clock.sync();
 		}
