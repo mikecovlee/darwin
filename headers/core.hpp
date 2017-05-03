@@ -1,38 +1,38 @@
 #pragma once
+/*
+* Covariant Darwin Universal Character Interface Generation 2
+* Copyright (C) 2017 Michael Lee
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #include <array>
 #include <cmath>
 #include <string>
-#include <memory>
 #include <typeinfo>
-#include <typeindex>
-#include "./debugger.hpp"
+#include <stdexcept>
+#include "./dll.hpp"
 namespace darwin {
-	enum class status {
-		null,ready,busy,leisure,error
-	};
-	enum class results {
-		null,success,failure
-	};
-	enum class colors {
+    enum class colors {
 		white,black,red,green,blue,pink,yellow,cyan
 	};
-	enum class attris {
-		bright,underline
-	};
-	enum class commands {
-		echo_on,echo_off,reset_cursor,reset_attri,clrscr
-	};
-	class pixel final {
+    class pixel final {
 		char mChar=' ';
-		std::array<bool,2> mAttris= {{false,false}};
-		std::array<colors,2> mColors= {{colors::white,colors::black}};
+		std::array<colors,2> mColors{colors::white,colors::black};
 	public:
 		pixel()=default;
 		pixel(const pixel&)=default;
-		pixel(char ch,bool bright,bool underline,colors fcolor,colors bcolor):mChar(ch),mAttris(
-		{
-			bright,underline
-		}),mColors({fcolor,bcolor})
+		pixel(char ch,colors fcolor=colors::white,colors bcolor=colors::black):mChar(ch),mColors({fcolor,bcolor})
 		{
 			if(ch<=31||ch>=127)
 				mChar='\?';
@@ -65,52 +65,16 @@ namespace darwin {
 		{
 			return mColors[1];
 		}
-		void set_colors(const std::array<colors,2>& c)
-		{
-			mColors=c;
-		}
-		const std::array<colors,2>& get_colors() const
-		{
-			return mColors;
-		}
-		void set_bright(bool value)
-		{
-			mAttris[0]=value;
-		}
-		bool is_bright() const
-		{
-			return mAttris[0];
-		}
-		void set_underline(bool value)
-		{
-			mAttris[1]=value;
-		}
-		bool is_underline() const
-		{
-			return mAttris[1];
-		}
-		void set_attris(const std::array<bool,2>& a)
-		{
-			mAttris=a;
-		}
-		const std::array<bool,2>& get_attris() const
-		{
-			return mAttris;
-		}
 	};
-	class drawable {
+	class canvas {
 	public:
 		static double draw_line_precision;
-		drawable()=default;
-		drawable(const drawable&)=default;
-		virtual ~drawable()=default;
-		virtual std::type_index get_type() const final
+		canvas()=default;
+		canvas(const canvas&)=default;
+		virtual ~canvas()=default;
+		virtual const std::type_info& get_type() const final
 		{
 			return typeid(*this);
-		}
-		virtual std::shared_ptr<drawable> clone() noexcept
-		{
-			return nullptr;
 		}
 		virtual bool usable() const noexcept=0;
 		virtual void clear()=0;
@@ -123,9 +87,9 @@ namespace darwin {
 		virtual void draw_line(int p0x,int p0y,int p1x,int p1y,const pixel& pix)
 		{
 			if(!this->usable())
-				Darwin_Error("Use of not available object.");
-			if(p0x<0||p0y<0||p1x<0||p1y<0||p0x>this->get_width()-1||p0y>this->get_height()-1||p1x>this->get_width()-1||p1y>this->get_height()-1)
-				Darwin_Warning("Out of range.");
+				throw std::logic_error("Use of not available object.");
+			/*if(p0x<0||p0y<0||p1x<0||p1y<0||p0x>this->get_width()-1||p0y>this->get_height()-1||p1x>this->get_width()-1||p1y>this->get_height()-1)
+				Darwin_Warning("Out of range.");*/
 			long w(p1x-p0x),h(p1y-p0y);
 			double distance(std::sqrt(std::pow(w,2)+std::pow(h,2))*draw_line_precision);
 			for(double c=0; c<=1; c+=1.0/distance)
@@ -136,9 +100,9 @@ namespace darwin {
 		virtual void draw_rect(int x,int y,int w,int h,const pixel& pix)
 		{
 			if(!this->usable())
-				Darwin_Error("Use of not available object.");
-			if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+w>this->get_width()||y+h>this->get_height())
-				Darwin_Warning("Out of range.");
+				throw std::logic_error("Use of not available object.");
+			/*if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+w>this->get_width()||y+h>this->get_height())
+				Darwin_Warning("Out of range.");*/
 			for(int i=0; i!=w; w>0?++i:--i) {
 				this->draw_pixel(x+i,y,pix);
 				this->draw_pixel(x+i,y+(h>0?h-1:h+1),pix);
@@ -151,9 +115,9 @@ namespace darwin {
 		virtual void fill_rect(int x,int y,int w,int h,const pixel& pix)
 		{
 			if(!this->usable())
-				Darwin_Error("Use of not available object.");
-			if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+w>this->get_width()||y+h>this->get_height())
-				Darwin_Warning("Out of range.");
+				throw std::logic_error("Use of not available object.");
+			/*if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+w>this->get_width()||y+h>this->get_height())
+				Darwin_Warning("Out of range.");*/
 			for(int cy=0; cy!=h; h>0?++cy:--cy)
 				for(int cx=0; cx!=w; w>0?++cx:--cx)
 					this->draw_pixel(x+cx,y+cy,pix);
@@ -161,7 +125,7 @@ namespace darwin {
 		virtual void draw_triangle(int x1,int y1,int x2,int y2,int x3,int y3,const pixel& pix)
 		{
 			if(!this->usable())
-				Darwin_Error("Use of not available object.");
+				throw std::logic_error("Use of not available object.");
 			this->draw_line(x1,y1,x2,y2,pix);
 			this->draw_line(x2,y2,x3,y3,pix);
 			this->draw_line(x3,y3,x1,y1,pix);
@@ -169,10 +133,10 @@ namespace darwin {
 		virtual void fill_triangle(int x1,int y1,int x2,int y2,int x3,int y3,const pixel& pix)
 		{
 			if(!this->usable())
-				Darwin_Error("Use of not available object.");
+				throw std::logic_error("Use of not available object.");
 			int v1x(x2-x1),v1y(y2-y1),v2x(x3-x2),v2y(y3-y2);
-			if(v1x*v2y-v2x*v1y==0)
-				Darwin_Warning("Three points in a line.");
+			/*if(v1x*v2y-v2x*v1y==0)
+				Darwin_Warning("Three points in a line.");*/
 			if(y2<y1) {
 				std::swap(y1,y2);
 				std::swap(x1,x2);
@@ -206,21 +170,21 @@ namespace darwin {
 		virtual void draw_string(int x,int y,const std::string& str,const pixel& pix)
 		{
 			if(!this->usable())
-				Darwin_Error("Use of not available object.");
-			if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+str.size()>this->get_width())
-				Darwin_Warning("Out of range.");
+				throw std::logic_error("Use of not available object.");
+			/*if(x<0||y<0||x>this->get_width()-1||y>this->get_height()-1||x+str.size()>this->get_width())
+				Darwin_Warning("Out of range.");*/
 			pixel p=pix;
 			for(int i=0; i<str.size(); ++i) {
 				p.set_char(str.at(i));
 				this->draw_pixel(x+i,y,p);
 			}
 		}
-		virtual void draw_picture(int col,int row,const drawable& pic)
+		virtual void draw_picture(int col,int row,const canvas& pic)
 		{
 			if(!this->usable()||!pic.usable())
-				Darwin_Error("Use of not available object.");
-			if(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1)
-				Darwin_Warning("Out of range.");
+				throw std::logic_error("Use of not available object.");
+			/*if(col<0||row<0||col>this->get_width()-1||row>this->get_height()-1)
+				Darwin_Warning("Out of range.");*/
 			int y0(row>=0?row:0),y1(row>=0?0:-row);
 			while(y0<this->get_height()&&y1<pic.get_height()) {
 				int x0(col>=0?col:0),x1(col>=0?0:-col);
@@ -234,5 +198,21 @@ namespace darwin {
 			}
 		}
 	};
-	double drawable::draw_line_precision=1.5;
+	double canvas::draw_line_precision=1.5;
+    class runtime final{
+    public:
+        runtime()=default;
+        runtime(const runtime&)=delete;
+        runtime& operator=(const runtime&)=delete;
+        ~runtime();
+        bool load(const std::string&);
+        void join();
+        void exit();
+        std::size_t get_width() const;
+        std::size_t get_height() const;
+        bool is_kb_hit() const;
+        int get_kb_hit() const;
+        void update(const canvas&);
+        void log(const std::string&);
+    };
 }
