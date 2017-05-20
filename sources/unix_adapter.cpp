@@ -20,7 +20,7 @@ namespace darwin {
 		virtual results init() noexcept override
 		{
 			conio::reset();
-			conio::clrscr();
+			//conio::clrscr();
 			conio::echo(false);
 			mReady = true;
 			return results::success;
@@ -28,7 +28,7 @@ namespace darwin {
 		virtual results stop() noexcept override
 		{
 			conio::reset();
-			conio::clrscr();
+			//conio::clrscr();
 			conio::echo(true);
 			mReady = false;
 			return results::success;
@@ -54,11 +54,11 @@ namespace darwin {
 			}
 			return results::success;
 		}
-		virtual bool is_kb_hit() noexcept
+		virtual bool is_kb_hit() noexcept override
 		{
 			return conio::kbhit();
 		}
-		virtual int get_kb_hit() noexcept
+		virtual int get_kb_hit() noexcept override
 		{
 			return conio::getch();
 		}
