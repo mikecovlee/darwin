@@ -114,7 +114,8 @@ void start()
 					snake_head[1]+=pic->get_height()-1;
 				else if(snake_head[1]>pic->get_height()-1)
 					snake_head[1]-=pic->get_height()-1;
-			} else if(snake_head[0]<0||snake_head[0]>pic->get_width()-1||snake_head[1]<0||snake_head[1]>pic->get_height()-1) {
+			}
+			else if(snake_head[0]<0||snake_head[0]>pic->get_width()-1||snake_head[1]<0||snake_head[1]>pic->get_height()-1) {
 				die();
 				return;
 			}
@@ -130,7 +131,8 @@ void start()
 			if(snake_head[0]==food[0]&&snake_head[1]==food[1]) {
 				gen_food();
 				score+=10*(1.0/hard);
-			} else
+			}
+			else
 				snake_body.pop_back();
 			frame=0;
 		}

@@ -269,7 +269,8 @@ namespace darwin {
 			if(x==w-1) {
 				x=0;
 				++y;
-			} else
+			}
+			else
 				++x;
 		}
 		return true;

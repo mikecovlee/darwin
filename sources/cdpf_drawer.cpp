@@ -377,10 +377,12 @@ public:
 						mode=0;
 						break;
 					}
-				} else if(mode==7) {
+				}
+				else if(mode==7) {
 					pix.set_char(runtime.get_kb_hit());
 					mode=0;
-				} else {
+				}
+				else {
 					switch(runtime.get_kb_hit()) {
 					case '1':
 						switch(mode) {
@@ -492,7 +494,8 @@ public:
 								vertex.push_back({cx,cy});
 								mode=11;
 								fmod=false;
-							} else
+							}
+							else
 								mode=1;
 							break;
 						case 1:
@@ -512,7 +515,8 @@ public:
 							if(fmod) {
 								mode=12;
 								fmod=false;
-							} else
+							}
+							else
 								mode=2;
 							break;
 						case 2:
@@ -534,7 +538,8 @@ public:
 							if(fmod) {
 								mode=23;
 								fmod=false;
-							} else
+							}
+							else
 								mode=3;
 							break;
 						case 3:
