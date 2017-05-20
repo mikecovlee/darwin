@@ -23,19 +23,16 @@
 #include <stdexcept>
 #include "./dll.hpp"
 namespace darwin {
-	enum class colors {
+    enum class colors {
 		white,black,red,green,blue,pink,yellow,cyan
 	};
-	class pixel final {
+    class pixel final {
 		char mChar=' ';
 		std::array<colors,2> mColors{colors::white,colors::black};
 	public:
 		pixel()=default;
 		pixel(const pixel&)=default;
-		pixel(char ch,colors fcolor=colors::white,colors bcolor=colors::black):mChar(ch),mColors(
-		{
-			fcolor,bcolor
-		})
+		pixel(char ch,colors fcolor=colors::white,colors bcolor=colors::black):mChar(ch),mColors({fcolor,bcolor})
 		{
 			if(ch<=31||ch>=127)
 				mChar='\?';
@@ -202,20 +199,20 @@ namespace darwin {
 		}
 	};
 	double canvas::draw_line_precision=1.5;
-	class runtime final {
-	public:
-		runtime()=default;
-		runtime(const runtime&)=delete;
-		runtime& operator=(const runtime&)=delete;
-		~runtime();
-		bool load(const std::string&);
-		void join();
-		void exit();
-		std::size_t get_width() const;
-		std::size_t get_height() const;
-		bool is_kb_hit() const;
-		int get_kb_hit() const;
-		void update(const canvas&);
-		void log(const std::string&);
-	};
+    class runtime final{
+    public:
+        runtime()=default;
+        runtime(const runtime&)=delete;
+        runtime& operator=(const runtime&)=delete;
+        ~runtime();
+        bool load(const std::string&);
+        void join();
+        void exit();
+        std::size_t get_width() const;
+        std::size_t get_height() const;
+        bool is_kb_hit() const;
+        int get_kb_hit() const;
+        void update(const canvas&);
+        void log(const std::string&);
+    };
 }
