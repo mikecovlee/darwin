@@ -1,3 +1,3 @@
-## Covariant Darwin Universal Character Interface Generation 2
+## Covariant Darwin Universal Character Interface
 ### Darwin是什么？
-**Darwin**是Covariant Studio开发的一款通用字符接口。目前已开发至第二代。
+**Darwin**是Covariant Studio开发的一款通用字符接口，脱胎于CGL而生。
