@@ -19,6 +19,6 @@ int main()
 		darwin::runtime.update_drawable();
 		clock.sync();
 	}
-	darwin::runtime.exit(0);
+	darwin::runtime.exit();
 	return 0;
 }

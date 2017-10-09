@@ -60,6 +60,6 @@ int main(int arg_size,char** arg_array)
 		runtime.update_drawable();
 		clock.sync();
 	}
-	runtime.exit(0);
+	runtime.exit();
 	return 0;
 }

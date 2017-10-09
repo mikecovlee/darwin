@@ -2,6 +2,7 @@
 #define DARWIN_DISABLE_LOG
 #include "../headers/darwin.hpp"
 #include <fstream>
+#include <cstdlib>
 #include <string>
 using namespace darwin;
 class cdpf_drawer final {
@@ -255,7 +256,8 @@ public:
 						about();
 						break;
 					case 3:
-						runtime.exit(0);
+						runtime.exit();
+						std::exit(0);
 						run=false;
 						break;
 					}
@@ -320,7 +322,8 @@ public:
 						about();
 						break;
 					case 5:
-						runtime.exit(0);
+						runtime.exit();
+						std::exit(0);
 						break;
 					}
 					run=false;
@@ -657,6 +660,6 @@ int main()
 	cdpf_drawer main_prog;
 	main_prog.start();
 	main_prog.main();
-	runtime.exit(0);
+	runtime.exit();
 	return 0;
 }
