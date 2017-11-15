@@ -1,13 +1,16 @@
 #/bin/sh
-rm ./headers/*.gch
+rm ./examples/*.gch
 rm ./sources/*.gch
 rm ./tests/*.gch
-astyle ./headers/*.*
+astyle ./examples/*.*
 astyle ./sources/*.*
 astyle ./tests/*.*
-astyle -A4 -N -t ./headers/*.*
+rm ./examples/*.orig
+rm ./sources/*.orig
+rm ./tests/*.orig
+astyle -A4 -N -t ./examples/*.*
 astyle -A4 -N -t ./sources/*.*
 astyle -A4 -N -t ./tests/*.*
-rm ./headers/*.orig
+rm ./examples/*.orig
 rm ./sources/*.orig
 rm ./tests/*.orig
