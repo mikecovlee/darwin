@@ -82,12 +82,12 @@ namespace darwin {
 			return *this;
 		}
 
-		virtual std::shared_ptr<drawable> clone() noexcept override
+		virtual std::shared_ptr<drawable> clone() override
 		{
 			return std::make_shared<picture>(*this);
 		}
 
-		virtual bool usable() const noexcept override
+		virtual bool usable() const override
 		{
 			return this->mImage != nullptr;
 		}

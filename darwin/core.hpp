@@ -154,12 +154,12 @@ namespace darwin {
 			return typeid(*this);
 		}
 
-		virtual std::shared_ptr<drawable> clone() noexcept
+		virtual std::shared_ptr<drawable> clone()
 		{
 			return nullptr;
 		}
 
-		virtual bool usable() const noexcept=0;
+		virtual bool usable() const=0;
 
 		virtual void clear()=0;
 

@@ -31,23 +31,23 @@ namespace darwin {
 
 		virtual ~platform_adapter() = default;
 
-		virtual status get_state() const noexcept=0;
+		virtual status get_state() const=0;
 
-		virtual results init() noexcept=0;
+		virtual results init()=0;
 
-		virtual results stop() noexcept=0;
+		virtual results stop()=0;
 
-		virtual results exec_commands(commands) noexcept=0;
+		virtual results exec_commands(commands)=0;
 
-		virtual bool is_kb_hit() noexcept=0;
+		virtual bool is_kb_hit()=0;
 
-		virtual int get_kb_hit() noexcept=0;
+		virtual int get_kb_hit()=0;
 
-		virtual results fit_drawable() noexcept=0;
+		virtual results fit_drawable()=0;
 
-		virtual drawable *get_drawable() noexcept=0;
+		virtual drawable *get_drawable()=0;
 
-		virtual results update_drawable() noexcept=0;
+		virtual results update_drawable()=0;
 	};
 
 	class module_adapter {
@@ -58,13 +58,13 @@ namespace darwin {
 
 		virtual ~module_adapter() = default;
 
-		virtual status get_state() const noexcept=0;
+		virtual status get_state() const=0;
 
-		virtual results load_module(const std::string &) noexcept=0;
+		virtual results load_module(const std::string &)=0;
 
-		virtual results free_module() noexcept=0;
+		virtual results free_module()=0;
 
-		virtual platform_adapter *get_platform_adapter() noexcept=0;
+		virtual platform_adapter *get_platform_adapter()=0;
 	};
 
 	typedef platform_adapter *(*module_enterance)();

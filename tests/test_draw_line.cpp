@@ -1,6 +1,6 @@
 #define DARWIN_FORCE_BUILTIN
 #define DARWIN_DISABLE_LOG
-#include "../headers/darwin.hpp"
+#include "../darwin/darwin.hpp"
 int main()
 {
 	darwin::runtime.load("./darwin.module");

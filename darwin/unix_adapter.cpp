@@ -20,20 +20,20 @@
 */
 #include "./module.hpp"
 #include "./graphics.hpp"
-#include "./win32_conio.hpp"
+#include "./unix_conio.hpp"
 #include <cstdio>
 #include <string>
 
 namespace darwin {
-	class win32_adapter : public platform_adapter {
+	class unix_adapter : public platform_adapter {
 		bool mReady = false;
 		picture mDrawable;
 	public:
-		win32_adapter() = default;
+		unix_adapter() = default;
 
-		virtual ~win32_adapter() = default;
+		virtual ~unix_adapter() = default;
 
-		virtual status get_state() const noexcept override
+		virtual status get_state() const override
 		{
 			if (mReady)
 				return status::ready;
@@ -41,9 +41,8 @@ namespace darwin {
 				return status::leisure;
 		}
 
-		virtual results init() noexcept override
+		virtual results init() override
 		{
-			conio::set_title("Covariant Darwin UCGL");
 			conio::reset();
 			//conio::clrscr();
 			conio::echo(false);
@@ -51,7 +50,7 @@ namespace darwin {
 			return results::success;
 		}
 
-		virtual results stop() noexcept override
+		virtual results stop() override
 		{
 			conio::reset();
 			//conio::clrscr();
@@ -60,7 +59,7 @@ namespace darwin {
 			return results::success;
 		}
 
-		virtual results exec_commands(commands c) noexcept override
+		virtual results exec_commands(commands c) override
 		{
 			switch (c) {
 			case commands::echo_on:
@@ -82,60 +81,59 @@ namespace darwin {
 			return results::success;
 		}
 
-		virtual bool is_kb_hit() noexcept override
+		virtual bool is_kb_hit() override
 		{
 			return conio::kbhit();
 		}
 
-		virtual int get_kb_hit() noexcept override
+		virtual int get_kb_hit() override
 		{
 			return conio::getch();
 		}
 
-		virtual results fit_drawable() noexcept override
+		virtual results fit_drawable() override
 		{
 			mDrawable.resize(conio::terminal_width(), conio::terminal_height());
 			return results::success;
 		}
 
-		virtual drawable *get_drawable() noexcept override
+		virtual drawable *get_drawable() override
 		{
 			return &mDrawable;
 		}
 
-		virtual results update_drawable() noexcept override
+		virtual results update_drawable() override
 		{
 			conio::gotoxy(0, 0);
 			std::size_t sw(std::min<std::size_t>(mDrawable.get_width(), conio::terminal_width())), sh(std::min<std::size_t>(mDrawable.get_height(), conio::terminal_height()));
-			conio::console buf(sw, sh);
 			for (std::size_t y = 0; y < sh; ++y) {
 				for (std::size_t x = 0; x < sw; ++x) {
 					const pixel &pix = mDrawable.get_pixel(x, y);
-					int fcolor, bcolor;
+					std::string cmd = "\e[0m\e[";
 					switch (pix.get_front_color()) {
 					case colors::white:
-						fcolor = 15;
+						cmd += "37;";
 						break;
 					case colors::black:
-						fcolor = 0;
+						cmd += "30;";
 						break;
 					case colors::red:
-						fcolor = 12;
+						cmd += "31;";
 						break;
 					case colors::green:
-						fcolor = 10;
+						cmd += "32;";
 						break;
 					case colors::blue:
-						fcolor = 9;
+						cmd += "34;";
 						break;
 					case colors::pink:
-						fcolor = 13;
+						cmd += "35;";
 						break;
 					case colors::yellow:
-						fcolor = 14;
+						cmd += "33;";
 						break;
 					case colors::cyan:
-						fcolor = 11;
+						cmd += "36;";
 						break;
 					default:
 						return results::failure;
@@ -143,45 +141,50 @@ namespace darwin {
 					}
 					switch (pix.get_back_color()) {
 					case colors::white:
-						bcolor = 15;
+						cmd += "47";
 						break;
 					case colors::black:
-						bcolor = 8;
+						cmd += "40";
 						break;
 					case colors::red:
-						bcolor = 12;
+						cmd += "41";
 						break;
 					case colors::green:
-						bcolor = 10;
+						cmd += "42";
 						break;
 					case colors::blue:
-						bcolor = 9;
+						cmd += "44";
 						break;
 					case colors::pink:
-						bcolor = 13;
+						cmd += "45";
 						break;
 					case colors::yellow:
-						bcolor = 14;
+						cmd += "43";
 						break;
 					case colors::cyan:
-						bcolor = 11;
+						cmd += "46";
 						break;
 					default:
 						return results::failure;
 						break;
 					}
-					buf.set_color(fcolor, bcolor);
-					buf.put_char(pix.get_char());
+					if (pix.is_bright())
+						cmd += ";1";
+					if (pix.is_underline())
+						cmd += ";4";
+					cmd += "m";
+					printf("%s%c", cmd.c_str(), pix.get_char());
 				}
-				buf.reset();
+				conio::reset();
+				printf("\n");
 			}
-			buf.flush();
+			fflush(stdout);
 			return results::success;
 		}
-	} dwin32adapter;
+	} dunixadapter;
 
 	platform_adapter *module_resource()
 	{
-		return &dwin32adapter;
+		return &dunixadapter;
 	}
 }

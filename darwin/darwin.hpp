@@ -92,7 +92,7 @@ namespace darwin {
 
 		darwin_rt(const darwin_rt &) = delete;
 
-		darwin_rt(darwin_rt &&) noexcept = delete;
+		darwin_rt(darwin_rt &&) = delete;
 
 		~darwin_rt();
 
@@ -100,7 +100,7 @@ namespace darwin {
 
 		void exit();
 
-		status get_state() const noexcept
+		status get_state() const
 		{
 			if (m_module == nullptr) return status::error;
 			if (m_platform == nullptr) return status::leisure;
@@ -109,31 +109,31 @@ namespace darwin {
 			return status::null;
 		}
 
-		virtual bool is_kb_hit() noexcept
+		virtual bool is_kb_hit()
 		{
 			if (m_platform == nullptr) Darwin_Error("Adapter is not ready.");
 			return m_platform->is_kb_hit();
 		}
 
-		virtual int get_kb_hit() noexcept
+		virtual int get_kb_hit()
 		{
 			if (m_platform == nullptr) Darwin_Error("Adapter is not ready.");
 			return m_platform->get_kb_hit();
 		}
 
-		results fit_drawable() noexcept
+		results fit_drawable()
 		{
 			if (m_platform == nullptr) return results::failure;
 			return m_platform->fit_drawable();
 		}
 
-		drawable *get_drawable() noexcept
+		drawable *get_drawable()
 		{
 			if (m_platform == nullptr) return nullptr;
 			return m_platform->get_drawable();
 		}
 
-		results update_drawable() noexcept
+		results update_drawable()
 		{
 			if (m_platform == nullptr) return results::failure;
 			return m_platform->update_drawable();
