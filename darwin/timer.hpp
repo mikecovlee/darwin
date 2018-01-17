@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
-* Copyright (C) 2017 Michael Lee(李登淳)
+* Copyright (C) 2018 Michael Lee(李登淳)
 * Email: mikecovlee@163.com
 * Github: https://github.com/mikecovlee
 */
@@ -29,7 +29,7 @@ namespace darwin {
 	class timer;
 }
 class darwin::timer final {
-	static std::chrono::time_point<std::chrono::high_resolution_clock> m_timer;
+	static std::chrono::time_point <std::chrono::high_resolution_clock> m_timer;
 public:
 	enum class time_unit {
 		nano_sec, micro_sec, milli_sec, second, minute
@@ -93,5 +93,5 @@ public:
 	}
 };
 
-std::chrono::time_point<std::chrono::high_resolution_clock>
+std::chrono::time_point <std::chrono::high_resolution_clock>
 darwin::timer::m_timer(std::chrono::high_resolution_clock::now());

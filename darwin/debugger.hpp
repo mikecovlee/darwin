@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
-* Copyright (C) 2017 Michael Lee(李登淳)
+* Copyright (C) 2018 Michael Lee(李登淳)
 * Email: mikecovlee@163.com
 * Github: https://github.com/mikecovlee
 */
@@ -131,49 +131,55 @@ namespace darwin {
 	};
 
 #ifndef DARWIN_DISABLE_LOG
+
 	class debugger final {
 		static outfs out;
 	public:
 #ifdef DARWIN_STRICT_CHECK
 		static constexpr bool strict=true;
 #else
-		static constexpr bool strict=false;
+		static constexpr bool strict = false;
 #endif
 #ifdef DARWIN_IGNORE_WARNING
 		static constexpr bool ignore=true;
 #else
-		static constexpr bool ignore=false;
+		static constexpr bool ignore = false;
 #endif
-		static void log(const char* file,int line,const char* func,const char* msg)
+
+		static void log(const char *file, int line, const char *func, const char *msg)
 		{
-			if(!out.usable())
+			if (!out.usable())
 				out.open("./darwin_runtime.log");
-			out.printf("[Darwin Log(%ums)]:In function \"%s\"(%s:%d):%s\n",timer::time(),func,file,line,msg);
+			out.printf("[Darwin Log(%ums)]:In function \"%s\"(%s:%d):%s\n", timer::time(), func, file, line, msg);
 		}
-		static void warning(const char* file,int line,const char* func,const char* msg)
+
+		static void warning(const char *file, int line, const char *func, const char *msg)
 		{
-			if(ignore)
+			if (ignore)
 				return;
-			if(!out.usable())
+			if (!out.usable())
 				out.open("./darwin_runtime.log");
-			out.printf("[Darwin Warning(%ums)]:In function \"%s\"(%s:%d):%s\n",timer::time(),func,file,line,msg);
-			if(strict) {
+			out.printf("[Darwin Warning(%ums)]:In function \"%s\"(%s:%d):%s\n", timer::time(), func, file, line, msg);
+			if (strict) {
 				out.flush();
 				std::terminate();
 			}
 		}
-		static void error(const char* file,int line,const char* func,const char* msg)
+
+		static void error(const char *file, int line, const char *func, const char *msg)
 		{
-			out.printf("[Darwin Error(%ums)]:In function \"%s\"(%s:%d):%s\n",timer::time(),func,file,line,msg);
+			out.printf("[Darwin Error(%ums)]:In function \"%s\"(%s:%d):%s\n", timer::time(), func, file, line, msg);
 			out.flush();
 			std::terminate();
 		}
-		static void log_path(const char* path)
+
+		static void log_path(const char *path)
 		{
 			out.close();
 			out.open(path);
 		}
 	};
+
 	outfs debugger::out;
 #endif
 }

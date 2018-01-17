@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
-* Copyright (C) 2017 Michael Lee(李登淳)
+* Copyright (C) 2018 Michael Lee(李登淳)
 * Email: mikecovlee@163.com
 * Github: https://github.com/mikecovlee
 *
@@ -177,7 +177,9 @@ void darwin::darwin_rt::exit()
 #include "./win32_module.hpp"
 
 #else
+
 #include "./unix_module.hpp"
+
 #endif
 #endif
 #endif

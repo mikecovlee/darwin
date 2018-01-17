@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
-* Copyright (C) 2017 Michael Lee(李登淳)
+* Copyright (C) 2018 Michael Lee(李登淳)
 * Email: mikecovlee@163.com
 * Github: https://github.com/mikecovlee
 */
@@ -58,10 +58,10 @@ namespace darwin {
 #ifdef DARWIN_FORCE_BUILTIN
 			m_adapter = module_resource();
 #else
-			m_handle=LoadLibrary(path.c_str());
-			if(m_handle==nullptr) return results::failure;
-			module_enterance enterance=(module_enterance)GetProcAddress(m_handle,module_enterance_name);
-			m_adapter=enterance();
+			m_handle = LoadLibrary(path.c_str());
+			if (m_handle == nullptr) return results::failure;
+			module_enterance enterance = (module_enterance) GetProcAddress(m_handle, module_enterance_name);
+			m_adapter = enterance();
 #endif
 			if (m_adapter == nullptr) return results::failure;
 			return results::success;
@@ -74,7 +74,7 @@ namespace darwin {
 			signal(SIGABRT, nullptr);
 #ifndef DARWIN_FORCE_BUILTIN
 			FreeLibrary(m_handle);
-			m_handle=nullptr;
+			m_handle = nullptr;
 #endif
 			m_adapter = nullptr;
 			return results::success;

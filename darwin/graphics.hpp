@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU Affero General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
-* Copyright (C) 2017 Michael Lee(李登淳)
+* Copyright (C) 2018 Michael Lee(李登淳)
 * Email: mikecovlee@163.com
 * Github: https://github.com/mikecovlee
 */
@@ -82,7 +82,7 @@ namespace darwin {
 			return *this;
 		}
 
-		virtual std::shared_ptr<drawable> clone() override
+		virtual std::shared_ptr <drawable> clone() override
 		{
 			return std::make_shared<picture>(*this);
 		}
