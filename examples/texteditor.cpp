@@ -30,7 +30,31 @@ public:
 	texteditor(const std::string& path) : file_path(path)
 	{
 		std::ifstream in(file_path);
-		for(std::string line; std::getline(in, line); file_buffer.push_back(line));
+		for(std::string line; std::getline(in, line); file_buffer.push_back(line))
+		{
+			for (std::size_t i = 0; i < line.size(); ++i)
+			{
+				if(line[i] == '\t')
+				{
+					line[i] = ' ';
+					for(std::size_t count = 0; count < 3; ++count)
+						line.insert(line.begin() + i, ' ');
+				}
+			}
+		}
+	}
+	void adjust_cursor(std::size_t x_offset)
+	{
+		if(x_offset < cursor_x + render_offx) {
+			x_offset = cursor_x + render_offx - x_offset;
+			for(; x_offset > 0 && cursor_x > 0; --x_offset, --cursor_x);
+			for(; x_offset > 0 && render_offx > 0; --x_offset, --render_offx);
+			if (cursor_x == 0 && render_offx < 4)
+				std::swap(cursor_x, render_offx);
+		} else {
+			for(; cursor_x + render_offx < x_offset && cursor_x < pic->get_width() - 1; ++cursor_x);
+			for(; cursor_x + render_offx < x_offset && cursor_x + render_offx < file_buffer[cursor_y + render_offy].size(); ++render_offx);
+		}
 	}
 	void key_up()
 	{
@@ -39,6 +63,8 @@ public:
 			--cursor_y;
 		else if (render_offy > 0)
 			--render_offy;
+		if (cursor_x + render_offx > file_buffer[cursor_y + render_offy].size())
+			adjust_cursor(file_buffer[cursor_y + render_offy].size());
 	}
 	void key_down()
 	{
@@ -47,14 +73,8 @@ public:
 			++cursor_y;
 		else if (render_offy + pic->get_height() - 2 < file_buffer.size())
 			++render_offy;
-		if (cursor_x + render_offx > file_buffer[cursor_y + render_offy].size()) {
-			std::size_t offset = cursor_x + render_offx - file_buffer[cursor_y + render_offy].size();
-			if (offset > cursor_x) {
-
-			}
-			else
-				cursor_x -= offset;
-		}
+		if (cursor_x + render_offx > file_buffer[cursor_y + render_offy].size())
+			adjust_cursor(file_buffer[cursor_y + render_offy].size());
 	}
 	void key_left()
 	{
@@ -63,12 +83,12 @@ public:
 			--cursor_x;
 		else if (render_offx > 0)
 			--render_offx;
-		else {
+		else if (cursor_y + render_offy > 0) {
 			if (render_offy > 0)
 				--render_offy;
 			else if (cursor_y > 0)
 				--cursor_y;
-			cursor_x = file_buffer[cursor_y + render_offy].size();
+			adjust_cursor(file_buffer[cursor_y + render_offy].size());
 		}
 	}
 	void key_right()
@@ -104,13 +124,13 @@ public:
                         cursor_x = render_offx = 0;
                     } else if(key == keymap::key_delete) {
                         if (cursor_x + render_offx == 0) {
-                            file_buffer.erase(file_buffer.begin() + cursor_y + render_offy);
                             key_up();
-                            file_buffer[cursor_y + render_offy].append(line);
-							
+							adjust_cursor(file_buffer[cursor_y + render_offy].size());
+							file_buffer[cursor_y + render_offy].append(line);
+							file_buffer.erase(file_buffer.begin() + cursor_y + render_offy + 1);
                         } else {
                             if (line.size() > 0) {
-                                line.erase(cursor_x + render_offx, 1);
+                                line.erase(cursor_x + render_offx - 1, 1);
                                 key_left();
                             }
                         }
@@ -143,6 +163,7 @@ public:
 					// TODO
 					break;
 				default:
+					insert_mode = true;
 					break;
 				}
 			}
