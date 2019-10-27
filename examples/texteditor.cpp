@@ -19,6 +19,8 @@ namespace keymap {
 	constexpr int key_quit = 'q';
 	constexpr int key_reload = 'r';
 	constexpr int key_save = 'x';
+	constexpr int key_find = 'f';
+	constexpr int key_info = 'v';
 } // namespace keymap
 
 class texteditor final {
@@ -38,11 +40,15 @@ class texteditor final {
 		reload
 	} await_process = await_process_type::null;
 
-	enum class unsaved_status_type {
+	enum class editor_status_type {
 		null,
 		asking,
-		confirm
-	} unsaved_status = unsaved_status_type::null;
+		confirm,
+		info,
+		setup,
+		finding,
+		replace
+	} editor_status = editor_status_type::null;
 
 public:
 	int tab_indent = 4;
@@ -241,7 +247,7 @@ private:
 				case keymap::key_reload:
 					if (text_modified) {
 						await_process = await_process_type::reload;
-						unsaved_status = unsaved_status_type::asking;
+						editor_status = editor_status_type::asking;
 					}
 					else {
 						file_buffer.clear();
@@ -251,11 +257,20 @@ private:
 				case keymap::key_quit:
 					if (text_modified) {
 						await_process = await_process_type::quit;
-						unsaved_status = unsaved_status_type::asking;
+						editor_status = editor_status_type::asking;
 					}
 					else
 						std::exit(0);
 					break;
+				case keymap::key_info:
+				{
+					std::size_t char_count = 0;
+					for(auto& line:file_buffer)
+						char_count += line.size();
+					char_buffer = std::to_string(file_buffer.size()) + " line(s), " + std::to_string(char_count) + " character(s)";
+					editor_status = editor_status_type::info;
+					break;
+				}
 				default:
 					insert_mode = true;
 					break;
@@ -343,7 +358,7 @@ private:
 			if (insert_mode)
 				pic->draw_string(2, pic->get_height() - 1, "INSERT (Press ESC to exit)", pixel(' ', true, false, colors::white, colors::blue));
 			else
-				pic->draw_string(2, pic->get_height() - 1, "WASD: Move Cursor I: Insert S: Save R: Reload Q: Exit", pixel(' ', true, false, colors::white, colors::blue));
+				pic->draw_string(2, pic->get_height() - 1, "WASD: Move I: Insert S: Save R: Reload F: Find V: Info Q: Exit", pixel(' ', true, false, colors::white, colors::blue));
 			render_cursor();
 			darwin::runtime.update_drawable();
 		}
@@ -358,16 +373,16 @@ private:
 			switch (std::tolower(darwin::runtime.get_kb_hit())) {
 			case 'y':
 				exec_await_process();
-				unsaved_status = unsaved_status_type::null;
+				editor_status = editor_status_type::null;
 				force_refresh();
 				break;
 			case 'n':
-				unsaved_status = unsaved_status_type::confirm;
+				editor_status = editor_status_type::confirm;
 				char_buffer = file_path;
 				break;
 			default:
 				await_process = await_process_type::null;
-				unsaved_status = unsaved_status_type::null;
+				editor_status = editor_status_type::null;
 				force_refresh();
 				break;
 			}
@@ -394,13 +409,28 @@ private:
 			case keymap::key_enter:
 				save_file(char_buffer);
 				exec_await_process();
-				unsaved_status = unsaved_status_type::null;
+				editor_status = editor_status_type::null;
 				force_refresh();
 				break;
 			default:
 				if (is_validate_path_char(key))
 					char_buffer.push_back(key);
 				break;
+			}
+		}
+		darwin::runtime.update_drawable();
+	}
+	void run_info()
+	{
+		darwin::runtime.fit_drawable();
+		draw_basic_frame();
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::yellow));
+		pic->draw_string(2, pic->get_height() - 1, "File Info: " + char_buffer + " (Press Q to close)", pixel(' ', true, false, colors::white, colors::yellow));
+		if (darwin::runtime.is_kb_hit()) {
+			if (std::tolower(darwin::runtime.get_kb_hit()) == 'q') {
+				await_process = await_process_type::null;
+				editor_status = editor_status_type::null;
+				force_refresh();
 			}
 		}
 		darwin::runtime.update_drawable();
@@ -415,15 +445,18 @@ public:
 		darwin::sync_clock clock(60);
 		while (true) {
 			clock.reset();
-			switch (unsaved_status) {
-			case unsaved_status_type::null:
+			switch (editor_status) {
+			case editor_status_type::null:
 				run_normal();
 				break;
-			case unsaved_status_type::asking:
+			case editor_status_type::asking:
 				run_unsaved_asking();
 				break;
-			case unsaved_status_type::confirm:
+			case editor_status_type::confirm:
 				run_unsaved_confirm();
+				break;
+			case editor_status_type::info:
+				run_info();
 				break;
 			}
 			clock.sync();
