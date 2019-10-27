@@ -163,7 +163,7 @@ private:
 		if (cursor_x < text_area_width()) {
 			if (text_offset_x() < current_line().size())
 				++cursor_x;
-			else if(text_offset_y() < file_buffer.size() - 1) {
+			else if (text_offset_y() < file_buffer.size() - 1) {
 				cursor_x = render_offx = 0;
 				key_down();
 			}
@@ -274,7 +274,7 @@ private:
 					break;
 				case keymap::key_info: {
 					std::size_t char_count = 0;
-					for(auto& line:file_buffer)
+					for (auto &line : file_buffer)
 						char_count += line.size();
 					char_buffer = std::to_string(file_buffer.size()) + " line(s), " + std::to_string(char_count) + " character(s)";
 					editor_status = editor_status_type::info;
@@ -370,7 +370,7 @@ private:
 			if (insert_mode)
 				pic->draw_string(2, pic->get_height() - 1, "INSERT (Press ESC to exit)", pixel(' ', true, false, colors::white, colors::blue));
 			else
-				pic->draw_string(2, pic->get_height() - 1, "WASD: Move I: Insert S: Save R: Reload F: Find V: Info Q: Exit", pixel(' ', true, false, colors::white, colors::blue));
+				pic->draw_string(2, pic->get_height() - 1, "WASD: Move I: Insert X: Save R: Reload F: Find V: Info Q: Exit", pixel(' ', true, false, colors::white, colors::blue));
 			render_cursor();
 			darwin::runtime.update_drawable();
 		}
@@ -440,9 +440,9 @@ private:
 	}
 	void find()
 	{
-		while(find_y < file_buffer.size()) {
-			auto& line = file_buffer[find_y];
-			auto pos = line.find(find_target, expect_txt?find_x + 1:0);
+		while (find_y < file_buffer.size()) {
+			auto &line = file_buffer[find_y];
+			auto pos = line.find(find_target, expect_txt ? find_x + 1 : 0);
 			if (pos != std::string::npos) {
 				if (!expect_txt || pos > find_x) {
 					found_text = true;
@@ -484,8 +484,7 @@ private:
 					find_target.pop_back();
 				break;
 			case keymap::key_enter:
-				if (find_target.empty())
-				{
+				if (find_target.empty()) {
 					editor_status = editor_status_type::null;
 					force_refresh();
 					break;
