@@ -22,12 +22,14 @@ namespace keymap {
 class texteditor final {
 	std::size_t render_border = 0, render_offx = 0, render_offy = 0;
 	std::size_t cursor_count = 0, cursor_x = 0, cursor_y = 0;
+	std::size_t last_win_width = 0, last_win_height = 0;
 	std::vector<std::string> file_buffer;
 	darwin::drawable *pic = nullptr;
 	bool insert_mode = false;
 	std::string file_path;
 
 public:
+	int tab_indent = 4;
 	texteditor(const std::string &path) : file_path(path)
 	{
 		std::ifstream in(file_path);
@@ -35,11 +37,32 @@ public:
 			for (std::size_t i = 0; i < line.size(); ++i) {
 				if (line[i] == '\t') {
 					line[i] = ' ';
-					for (std::size_t count = 0; count < 3; ++count)
+					for (std::size_t count = 0; count < tab_indent - 1; ++count)
 						line.insert(line.begin() + i, ' ');
 				}
 			}
 		}
+	}
+private:
+	std::size_t text_area_width()
+	{
+		return pic->get_width() - render_border - 5;
+	}
+	std::size_t text_area_height()
+	{
+		return pic->get_height() - 2;
+	}
+	std::size_t text_offset_x()
+	{
+		return render_offx + cursor_x;
+	}
+	std::size_t text_offset_y()
+	{
+		return render_offy + cursor_y;
+	}
+	std::string& current_line()
+	{
+		return file_buffer[text_offset_y()];
 	}
 	void adjust_cursor(std::size_t x_offset)
 	{
@@ -55,7 +78,7 @@ public:
 		else {
 			for (; cursor_x + render_offx < x_offset && cursor_x < pic->get_width() - 1; ++cursor_x)
 				;
-			for (; cursor_x + render_offx < x_offset && cursor_x + render_offx < file_buffer[cursor_y + render_offy].size(); ++render_offx)
+			for (; cursor_x + render_offx < x_offset && cursor_x + render_offx < current_line().size(); ++render_offx)
 				;
 		}
 	}
@@ -66,18 +89,18 @@ public:
 			--cursor_y;
 		else if (render_offy > 0)
 			--render_offy;
-		if (cursor_x + render_offx > file_buffer[cursor_y + render_offy].size())
-			adjust_cursor(file_buffer[cursor_y + render_offy].size());
+		if (cursor_x + render_offx > current_line().size())
+			adjust_cursor(current_line().size());
 	}
 	void key_down()
 	{
 		cursor_count = 0;
-		if (cursor_y < pic->get_height() - 3)
+		if (cursor_y < text_area_height() - 1)
 			++cursor_y;
-		else if (render_offy + pic->get_height() - 2 < file_buffer.size())
+		else if (render_offy + text_area_height() < file_buffer.size())
 			++render_offy;
-		if (cursor_x + render_offx > file_buffer[cursor_y + render_offy].size())
-			adjust_cursor(file_buffer[cursor_y + render_offy].size());
+		if (cursor_x + render_offx > current_line().size())
+			adjust_cursor(current_line().size());
 	}
 	void key_left()
 	{
@@ -91,56 +114,71 @@ public:
 				--render_offy;
 			else if (cursor_y > 0)
 				--cursor_y;
-			adjust_cursor(file_buffer[cursor_y + render_offy].size());
+			adjust_cursor(current_line().size());
 		}
 	}
 	void key_right()
 	{
 		cursor_count = 0;
-		if (cursor_x < pic->get_width() - 1) {
-			if (cursor_x + render_offx < file_buffer[cursor_y + render_offy].size())
+		if (cursor_x < text_area_width()) {
+			if (text_offset_x() < current_line().size())
 				++cursor_x;
 			else
 				key_down();
 		}
-		else if (cursor_x + render_offx < file_buffer[cursor_y + render_offy].size())
+		else if (text_offset_x() < current_line().size())
 			++render_offx;
-		else if (render_offy + pic->get_height() - 2 < file_buffer.size()) {
+		else if (render_offy + text_area_height() < file_buffer.size()) {
 			render_offx = 0;
 			++render_offy;
 		}
 	}
-	void keyboard_input()
+	bool window_resized()
+	{
+		if (last_win_width != pic->get_width() || last_win_height != pic->get_height()) {
+			last_win_width = pic->get_width();
+			last_win_height = pic->get_height();
+			while(cursor_x >= text_area_width())
+			{
+				--cursor_x;
+				++render_offx;
+			}
+			return true;
+		}
+		else
+			return false;
+	}
+	bool keyboard_input()
 	{
 		if (darwin::runtime.is_kb_hit()) {
 			if (insert_mode) {
 				int key = darwin::runtime.get_kb_hit();
 				if (key != keymap::key_esc) {
-					auto &line = file_buffer[cursor_y + render_offy];
+					auto &line = current_line();
 					if (key == keymap::key_enter) {
-						auto line_current = line.substr(0, cursor_x + render_offx);
-						auto line_next = line.substr(cursor_x + render_offx);
+						auto line_current = line.substr(0, text_offset_x());
+						auto line_next = line.substr(text_offset_x());
 						line = line_current;
-						file_buffer.insert(file_buffer.begin() + cursor_y + render_offy + 1, line_next);
+						file_buffer.insert(file_buffer.begin() + text_offset_y() + 1, line_next);
 						key_down();
 						cursor_x = render_offx = 0;
 					}
 					else if (key == keymap::key_delete) {
 						if (cursor_x + render_offx == 0) {
 							key_up();
-							adjust_cursor(file_buffer[cursor_y + render_offy].size());
-							file_buffer[cursor_y + render_offy].append(line);
-							file_buffer.erase(file_buffer.begin() + cursor_y + render_offy + 1);
+							adjust_cursor(current_line().size());
+							current_line().append(line);
+							file_buffer.erase(file_buffer.begin() + text_offset_y() + 1);
 						}
 						else {
 							if (line.size() > 0) {
-								line.erase(cursor_x + render_offx - 1, 1);
+								line.erase(text_offset_x() - 1, 1);
 								key_left();
 							}
 						}
 					}
 					else {
-						line.insert(line.begin() + cursor_x + render_offx, key);
+						line.insert(line.begin() + text_offset_x(), key);
 						key_right();
 					}
 				}
@@ -172,12 +210,23 @@ public:
 					break;
 				}
 			}
+			return true;
 		}
+		else
+			return false;
+	}
+	bool cursor_timer()
+	{
+		++cursor_count;
+		if (cursor_count == 30 || cursor_count == 60)
+			return true;
+		else
+			return false;
 	}
 	void render_linenum()
 	{
 		render_border = std::to_string(file_buffer.size()).size();
-		for (std::size_t i = 0; i < pic->get_height() - 2; ++i) {
+		for (std::size_t i = 0; i < text_area_height(); ++i) {
 			pic->draw_line(2, i + 1, 1 + render_border, i + 1, pixel(' ', true, false, colors::white, colors::white));
 			std::string txt = std::to_string(render_offy + i + 1);
 			pic->draw_string(2 + (render_border - txt.size()), i + 1, txt, pixel(' ', true, false, colors::black, colors::white));
@@ -185,8 +234,8 @@ public:
 	}
 	void render_text()
 	{
-		for (std::size_t y = 0; y < pic->get_height() - 2 && y + render_offy < file_buffer.size(); ++y) {
-			for (std::size_t x = 0; x < pic->get_width() - 5 && x + render_offx < file_buffer[y + render_offy].size(); ++x) {
+		for (std::size_t y = 0; y < text_area_height() && y + render_offy < file_buffer.size(); ++y) {
+			for (std::size_t x = 0; x < text_area_width() && x + render_offx < file_buffer[y + render_offy].size(); ++x) {
 				char ch = file_buffer[y + render_offy][x + render_offx];
 				pic->draw_pixel(x + 3 + render_border, y + 1, pixel(ch, true, false, colors::white, colors::black));
 			}
@@ -194,12 +243,12 @@ public:
 	}
 	void render_cursor()
 	{
-		if (++cursor_count < 30) {
+		if (cursor_count <= 30)
 			darwin::runtime.get_drawable()->draw_pixel(cursor_x + 3 + render_border, cursor_y + 1, pixel(' ', true, false, colors::white, colors::white));
-		}
 		else if (cursor_count == 60)
 			cursor_count = 0;
 	}
+public:
 	void run()
 	{
 		darwin::runtime.load("./darwin.module");
@@ -208,24 +257,25 @@ public:
 		darwin::sync_clock clock(60);
 		while (true) {
 			clock.reset();
-			keyboard_input();
 			darwin::runtime.fit_drawable();
-			pic->fill(pixel(' ', true, false, colors::white, colors::black));
-			pic->draw_line(0, 0, pic->get_width() - 1, 0, pixel(' ', true, false, colors::blue, colors::blue));
-			pic->draw_string(2, 0, "[Darwin Texteditor]  " + file_path, pixel(' ', true, false, colors::white, colors::blue));
-			pic->draw_line(0, pic->get_height() - 1, pic->get_width() - 1, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
-			if (insert_mode)
-				pic->draw_string(2, pic->get_height() - 1, "INSERT (Press ESC to exit)", pixel(' ', true, false, colors::white, colors::blue));
-			else
-				pic->draw_string(2, pic->get_height() - 1, "W: Up S: Down A: Left D: Right I: Insert Q: Exit", pixel(' ', true, false, colors::white, colors::blue));
-			pic->draw_line(0, 0, 0, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
-			pic->draw_line(1, 0, 1, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
-			pic->draw_line(pic->get_width() - 1, 0, pic->get_width() - 1, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
-			pic->draw_line(pic->get_width() - 2, 0, pic->get_width() - 2, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
-			render_linenum();
-			render_text();
-			render_cursor();
-			darwin::runtime.update_drawable();
+			if (window_resized() || keyboard_input() || cursor_timer()) {
+				pic->fill(pixel(' ', true, false, colors::white, colors::black));
+				pic->draw_line(0, 0, pic->get_width() - 1, 0, pixel(' ', true, false, colors::blue, colors::blue));
+				pic->draw_string(2, 0, "Darwin UCGL Texteditor: " + file_path, pixel(' ', true, false, colors::white, colors::blue));
+				pic->draw_line(0, pic->get_height() - 1, pic->get_width() - 1, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
+				if (insert_mode)
+					pic->draw_string(2, pic->get_height() - 1, "INSERT (Press ESC to exit)", pixel(' ', true, false, colors::white, colors::blue));
+				else
+					pic->draw_string(2, pic->get_height() - 1, "W: Up S: Down A: Left D: Right I: Insert Q: Exit", pixel(' ', true, false, colors::white, colors::blue));
+				pic->draw_line(0, 0, 0, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
+				pic->draw_line(1, 0, 1, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
+				pic->draw_line(pic->get_width() - 1, 0, pic->get_width() - 1, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
+				pic->draw_line(pic->get_width() - 2, 0, pic->get_width() - 2, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::blue));
+				render_linenum();
+				render_text();
+				render_cursor();
+				darwin::runtime.update_drawable();
+			}
 			clock.sync();
 		}
 	}
