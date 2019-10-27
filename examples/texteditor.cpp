@@ -152,7 +152,7 @@ private:
 		if (cursor_x < text_area_width()) {
 			if (text_offset_x() < current_line().size())
 				++cursor_x;
-			else {
+			else if(text_offset_y() < file_buffer.size() - 1) {
 				cursor_x = render_offx = 0;
 				key_down();
 			}
