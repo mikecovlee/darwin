@@ -484,6 +484,12 @@ private:
 					find_target.pop_back();
 				break;
 			case keymap::key_enter:
+				if (find_target.empty())
+				{
+					editor_status = editor_status_type::null;
+					force_refresh();
+					break;
+				}
 				find();
 				if (found_text)
 					editor_status = editor_status_type::finding;
@@ -506,7 +512,6 @@ private:
 		pic->draw_string(2, pic->get_height() - 1, "Find: \"" + find_target + "\" not found (Press Q to close)", pixel(' ', true, false, colors::black, colors::white));
 		if (darwin::runtime.is_kb_hit()) {
 			if (std::tolower(darwin::runtime.get_kb_hit()) == 'q') {
-				await_process = await_process_type::null;
 				editor_status = editor_status_type::null;
 				force_refresh();
 			}
@@ -531,7 +536,6 @@ private:
 				reset_find();
 				if (text_offset_x() > current_line().size())
 					adjust_cursor(current_line().size());
-				await_process = await_process_type::null;
 				editor_status = editor_status_type::null;
 				force_refresh();
 				break;
@@ -559,8 +563,12 @@ private:
 					find();
 					if (found_text)
 						editor_status = editor_status_type::finding;
-					else
+					else {
+						reset_find();
+						if (text_offset_x() > current_line().size())
+							adjust_cursor(current_line().size());
 						editor_status = editor_status_type::notfound;
+					}
 				}
 				break;
 			default:
@@ -579,7 +587,6 @@ private:
 		pic->draw_string(2, pic->get_height() - 1, "File Info: " + char_buffer + " (Press Q to close)", pixel(' ', true, false, colors::white, colors::yellow));
 		if (darwin::runtime.is_kb_hit()) {
 			if (std::tolower(darwin::runtime.get_kb_hit()) == 'q') {
-				await_process = await_process_type::null;
 				editor_status = editor_status_type::null;
 				force_refresh();
 			}
