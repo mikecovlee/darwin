@@ -28,9 +28,13 @@ class texteditor final {
 	std::size_t cursor_count = 0, cursor_x = 0, cursor_y = 0;
 	std::size_t last_win_width = 0, last_win_height = 0;
 	std::vector<std::string> file_buffer;
+	std::size_t find_x = 0, find_y = 0;
 	darwin::drawable *pic = nullptr;
 	bool text_modified = false;
 	bool insert_mode = false;
+	bool found_text = false;
+	bool expect_txt = false;
+	std::string find_target;
 	std::string char_buffer;
 	std::string file_path;
 
@@ -46,6 +50,7 @@ class texteditor final {
 		confirm,
 		info,
 		setup,
+		notfound,
 		finding,
 		replace
 	} editor_status = editor_status_type::null;
@@ -262,8 +267,12 @@ private:
 					else
 						std::exit(0);
 					break;
-				case keymap::key_info:
-				{
+				case keymap::key_find:
+					find_target.clear();
+					char_buffer.clear();
+					editor_status = editor_status_type::setup;
+					break;
+				case keymap::key_info: {
 					std::size_t char_count = 0;
 					for(auto& line:file_buffer)
 						char_count += line.size();
@@ -303,7 +312,10 @@ private:
 		for (std::size_t y = 0; y < text_area_height() && y + render_offy < file_buffer.size(); ++y) {
 			for (std::size_t x = 0; x < text_area_width() && x + render_offx < file_buffer[y + render_offy].size(); ++x) {
 				char ch = file_buffer[y + render_offy][x + render_offx];
-				pic->draw_pixel(x + 3 + render_border, y + 1, pixel(ch, true, false, colors::white, colors::black));
+				if (found_text && x + render_offx >= find_x && x + render_offx < find_x + find_target.size() && y + render_offy == find_y)
+					pic->draw_pixel(x + 3 + render_border, y + 1, pixel(ch, true, false, colors::white, colors::pink));
+				else
+					pic->draw_pixel(x + 3 + render_border, y + 1, pixel(ch, true, false, colors::white, colors::black));
 			}
 		}
 	}
@@ -367,7 +379,7 @@ private:
 	{
 		darwin::runtime.fit_drawable();
 		draw_basic_frame();
-		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::red));
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::red, colors::red));
 		pic->draw_string(2, pic->get_height() - 1, "File unsaved, continue without saving? (Yes(Y), No(N) or other key to cancel)", pixel(' ', true, false, colors::white, colors::red));
 		if (darwin::runtime.is_kb_hit()) {
 			switch (std::tolower(darwin::runtime.get_kb_hit())) {
@@ -397,7 +409,7 @@ private:
 	{
 		darwin::runtime.fit_drawable();
 		draw_basic_frame();
-		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::cyan));
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::cyan, colors::cyan));
 		pic->draw_string(2, pic->get_height() - 1, "Save to: " + char_buffer, pixel(' ', true, false, colors::white, colors::cyan));
 		if (darwin::runtime.is_kb_hit()) {
 			int key = 0;
@@ -420,11 +432,150 @@ private:
 		}
 		darwin::runtime.update_drawable();
 	}
+	void reset_find()
+	{
+		find_x = find_y = 0;
+		found_text = false;
+		expect_txt = false;
+	}
+	void find()
+	{
+		while(find_y < file_buffer.size()) {
+			auto& line = file_buffer[find_y];
+			auto pos = line.find(find_target, expect_txt?find_x + 1:0);
+			if (pos != std::string::npos) {
+				if (!expect_txt || pos > find_x) {
+					found_text = true;
+					expect_txt = true;
+					find_x = pos;
+					break;
+				}
+			}
+			expect_txt = false;
+			find_x = 0;
+			++find_y;
+		}
+		if (found_text) {
+			if (find_y == file_buffer.size()) {
+				reset_find();
+				find();
+			}
+			cursor_x = render_offx = 0;
+			cursor_y = 0;
+			if (find_y < file_buffer.size() - text_area_height())
+				render_offy = find_y > 4 ? find_y - 4 : 0;
+			else
+				render_offy = file_buffer.size() - text_area_height();
+			if (find_x + find_target.size() > text_area_width())
+				render_offx = find_x + find_target.size() - text_area_width() + 1;
+		}
+	}
+	void run_find_setup()
+	{
+		darwin::runtime.fit_drawable();
+		draw_basic_frame();
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::white, colors::white));
+		pic->draw_string(2, pic->get_height() - 1, "Find: " + find_target, pixel(' ', true, false, colors::black, colors::white));
+		if (darwin::runtime.is_kb_hit()) {
+			int key = 0;
+			switch (key = std::tolower(darwin::runtime.get_kb_hit())) {
+			case keymap::key_delete:
+				if (!find_target.empty())
+					find_target.pop_back();
+				break;
+			case keymap::key_enter:
+				find();
+				if (found_text)
+					editor_status = editor_status_type::finding;
+				else
+					editor_status = editor_status_type::notfound;
+				break;
+			default:
+				if (!std::iscntrl(key))
+					find_target.push_back(key);
+				break;
+			}
+		}
+		darwin::runtime.update_drawable();
+	}
+	void run_notfound()
+	{
+		darwin::runtime.fit_drawable();
+		draw_basic_frame();
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::white, colors::white));
+		pic->draw_string(2, pic->get_height() - 1, "Find: \"" + find_target + "\" not found (Press Q to close)", pixel(' ', true, false, colors::black, colors::white));
+		if (darwin::runtime.is_kb_hit()) {
+			if (std::tolower(darwin::runtime.get_kb_hit()) == 'q') {
+				await_process = await_process_type::null;
+				editor_status = editor_status_type::null;
+				force_refresh();
+			}
+		}
+		darwin::runtime.update_drawable();
+	}
+	void run_finding()
+	{
+		darwin::runtime.fit_drawable();
+		draw_basic_frame();
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::white, colors::white));
+		pic->draw_string(2, pic->get_height() - 1, "Find: \"" + find_target + "\" (Next(N) Replace(R) Quit(Q))", pixel(' ', true, false, colors::black, colors::white));
+		if (darwin::runtime.is_kb_hit()) {
+			switch (std::tolower(darwin::runtime.get_kb_hit())) {
+			case 'n':
+				find();
+				break;
+			case 'r':
+				editor_status = editor_status_type::replace;
+				break;
+			case 'q':
+				reset_find();
+				if (text_offset_x() > current_line().size())
+					adjust_cursor(current_line().size());
+				await_process = await_process_type::null;
+				editor_status = editor_status_type::null;
+				force_refresh();
+				break;
+			}
+		}
+		darwin::runtime.update_drawable();
+	}
+	void run_replace()
+	{
+		darwin::runtime.fit_drawable();
+		draw_basic_frame();
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::pink, colors::pink));
+		pic->draw_string(2, pic->get_height() - 1, "Replace: " + char_buffer, pixel(' ', true, false, colors::white, colors::pink));
+		if (darwin::runtime.is_kb_hit()) {
+			int key = 0;
+			switch (key = std::tolower(darwin::runtime.get_kb_hit())) {
+			case keymap::key_delete:
+				if (!char_buffer.empty())
+					char_buffer.pop_back();
+				break;
+			case keymap::key_enter:
+				if (char_buffer != find_target) {
+					text_modified = true;
+					file_buffer[find_y].replace(find_x, find_target.size(), char_buffer);
+					find();
+					if (found_text)
+						editor_status = editor_status_type::finding;
+					else
+						editor_status = editor_status_type::notfound;
+				}
+				break;
+			default:
+				if (!std::iscntrl(key))
+					char_buffer.push_back(key);
+				break;
+			}
+		}
+		darwin::runtime.update_drawable();
+	}
 	void run_info()
 	{
 		darwin::runtime.fit_drawable();
 		draw_basic_frame();
-		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::blue, colors::yellow));
+		pic->draw_line(2, pic->get_height() - 1, pic->get_width() - 3, pic->get_height() - 1, pixel(' ', true, false, colors::yellow, colors::yellow));
 		pic->draw_string(2, pic->get_height() - 1, "File Info: " + char_buffer + " (Press Q to close)", pixel(' ', true, false, colors::white, colors::yellow));
 		if (darwin::runtime.is_kb_hit()) {
 			if (std::tolower(darwin::runtime.get_kb_hit()) == 'q') {
@@ -454,6 +605,18 @@ public:
 				break;
 			case editor_status_type::confirm:
 				run_unsaved_confirm();
+				break;
+			case editor_status_type::setup:
+				run_find_setup();
+				break;
+			case editor_status_type::notfound:
+				run_notfound();
+				break;
+			case editor_status_type::finding:
+				run_finding();
+				break;
+			case editor_status_type::replace:
+				run_replace();
 				break;
 			case editor_status_type::info:
 				run_info();
