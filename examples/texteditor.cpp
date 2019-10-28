@@ -13,8 +13,10 @@ using namespace darwin;
 // 按键映射
 namespace keymap {
 	constexpr int key_esc = 27;
-	constexpr int key_enter = 10;
-	constexpr int key_delete = 127;
+	constexpr int key_enter_unix = '\r';
+	constexpr int key_enter_win32 = '\n';
+	constexpr int key_delete_unix = 127;
+	constexpr int key_delete_win32 = '\b';
 	constexpr int key_tab = '\t';
 	constexpr int key_up = 'w';
 	constexpr int key_down = 's';
@@ -236,6 +238,37 @@ private:
 			++render_offy;
 		}
 	}
+	void key_enter()
+	{
+		auto &line = current_line();
+		auto line_current = line.substr(0, text_offset_x());
+		auto line_next = line.substr(text_offset_x());
+		line = line_current;
+		file_buffer.insert(file_buffer.begin() + text_offset_y() + 1, line_next);
+		key_down();
+		cursor_x = render_offx = 0;
+		text_modified = true;
+	}
+	void key_delete()
+	{
+		auto &line = current_line();
+		if (cursor_x + render_offx == 0) {
+			if (text_offset_y() != 0) {
+				key_up();
+				adjust_cursor(current_line().size());
+				current_line().append(line);
+				file_buffer.erase(file_buffer.begin() + text_offset_y() + 1);
+				text_modified = true;
+			}
+		}
+		else {
+			if (line.size() > 0) {
+				line.erase(text_offset_x() - 1, 1);
+				key_left();
+				text_modified = true;
+			}
+		}
+	}
 	// 事件响应
 	bool window_resized()
 	{
@@ -262,33 +295,13 @@ private:
 				if (key != keymap::key_esc) {
 					auto &line = current_line();
 					switch (key) {
-					case keymap::key_enter: {
-						auto line_current = line.substr(0, text_offset_x());
-						auto line_next = line.substr(text_offset_x());
-						line = line_current;
-						file_buffer.insert(file_buffer.begin() + text_offset_y() + 1, line_next);
-						key_down();
-						cursor_x = render_offx = 0;
-						text_modified = true;
+					case keymap::key_enter_unix:
+					case keymap::key_enter_win32:
+						key_enter();
 						break;
-					}
-					case keymap::key_delete:
-						if (cursor_x + render_offx == 0) {
-							if (text_offset_y() != 0) {
-								key_up();
-								adjust_cursor(current_line().size());
-								current_line().append(line);
-								file_buffer.erase(file_buffer.begin() + text_offset_y() + 1);
-								text_modified = true;
-							}
-						}
-						else {
-							if (line.size() > 0) {
-								line.erase(text_offset_x() - 1, 1);
-								key_left();
-								text_modified = true;
-							}
-						}
+					case keymap::key_delete_unix:
+					case keymap::key_delete_win32:
+						key_delete();
 						break;
 					case keymap::key_tab:
 						line.insert(text_offset_x(), std::string(tab_indent, ' '));
@@ -485,11 +498,13 @@ private:
 		if (darwin::runtime.is_kb_hit()) {
 			int key = 0;
 			switch (key = std::tolower(darwin::runtime.get_kb_hit())) {
-			case keymap::key_delete:
+			case keymap::key_delete_unix:
+			case keymap::key_delete_win32:
 				if (!char_buffer.empty())
 					char_buffer.pop_back();
 				break;
-			case keymap::key_enter:
+			case keymap::key_enter_unix:
+			case keymap::key_enter_win32:
 				save_file(char_buffer);
 				exec_await_process();
 				editor_status = editor_status_type::null;
@@ -512,11 +527,13 @@ private:
 		if (darwin::runtime.is_kb_hit()) {
 			int key = 0;
 			switch (key = std::tolower(darwin::runtime.get_kb_hit())) {
-			case keymap::key_delete:
+			case keymap::key_delete_unix:
+			case keymap::key_delete_win32:
 				if (!find_target.empty())
 					find_target.pop_back();
 				break;
-			case keymap::key_enter:
+			case keymap::key_enter_unix:
+			case keymap::key_enter_win32:
 				if (find_target.empty()) {
 					editor_status = editor_status_type::null;
 					force_refresh();
@@ -584,11 +601,13 @@ private:
 		if (darwin::runtime.is_kb_hit()) {
 			int key = 0;
 			switch (key = std::tolower(darwin::runtime.get_kb_hit())) {
-			case keymap::key_delete:
+			case keymap::key_delete_unix:
+			case keymap::key_delete_win32:
 				if (!char_buffer.empty())
 					char_buffer.pop_back();
 				break;
-			case keymap::key_enter:
+			case keymap::key_enter_unix:
+			case keymap::key_enter_win32:
 				if (char_buffer != find_target) {
 					text_modified = true;
 					file_buffer[find_y].replace(find_x, find_target.size(), char_buffer);
