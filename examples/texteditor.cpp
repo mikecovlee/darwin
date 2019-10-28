@@ -1,16 +1,21 @@
+// 关闭Darwin UCGL的扩展功能和日志功能
 #define DARWIN_FORCE_BUILTIN
 #define DARWIN_DISABLE_LOG
-#include "../darwin/darwin.hpp"
+// 引入Darwin UCGL
+#include <darwin/darwin.hpp>
+// 其他STL
 #include <fstream>
 #include <cstdlib>
 #include <vector>
 #include <string>
+// 引入Darwin UCGL名称空间
 using namespace darwin;
-
+// 按键映射
 namespace keymap {
 	constexpr int key_esc = 27;
 	constexpr int key_enter = 10;
 	constexpr int key_delete = 127;
+	constexpr int key_tab = '\t';
 	constexpr int key_up = 'w';
 	constexpr int key_down = 's';
 	constexpr int key_left = 'a';
@@ -22,28 +27,36 @@ namespace keymap {
 	constexpr int key_find = 'f';
 	constexpr int key_info = 'v';
 } // namespace keymap
-
+// 文本编辑器类
 class texteditor final {
+// 渲染器属性
 	std::size_t render_border = 0, render_offx = 0, render_offy = 0;
+// 光标属性
 	std::size_t cursor_count = 0, cursor_x = 0, cursor_y = 0;
+// 窗口属性
 	std::size_t last_win_width = 0, last_win_height = 0;
+// 文本 Buffer
 	std::vector<std::string> file_buffer;
+// 查找高亮属性
 	std::size_t find_x = 0, find_y = 0;
+// 帧 Buffer
 	darwin::drawable *pic = nullptr;
+// 状态
 	bool text_modified = false;
 	bool insert_mode = false;
 	bool found_text = false;
 	bool expect_txt = false;
+// 字符 Buffer
 	std::string find_target;
 	std::string char_buffer;
 	std::string file_path;
-
+// 挂起任务
 	enum class await_process_type {
 		null,
 		quit,
 		reload
 	} await_process = await_process_type::null;
-
+// 编辑器状态
 	enum class editor_status_type {
 		null,
 		asking,
@@ -56,8 +69,15 @@ class texteditor final {
 	} editor_status = editor_status_type::null;
 
 public:
-	int tab_indent = 4;
-	void load(const std::string &path)
+// Tab 缩进宽度
+	unsigned int tab_indent = 4;
+// 构造函数 & 赋值函数
+	texteditor() = default;
+	texteditor(const texteditor&) = delete;
+	texteditor &operator(const texteditor&) = delete;
+private:
+	// 文件操作
+	void load_file(const std::string &path)
 	{
 		std::ifstream in(file_path);
 		for (std::string line; std::getline(in, line); file_buffer.push_back(line)) {
@@ -70,12 +90,15 @@ public:
 			}
 		}
 	}
-	texteditor(const std::string &path) : file_path(path)
+	void save_file(const std::string &path)
 	{
-		load(file_path);
+		std::ofstream out(path);
+		for (std::size_t idx = 0; idx < file_buffer.size() - 1; ++idx)
+			out << file_buffer[idx] << std::endl;
+		out << file_buffer[file_buffer.size() - 1] << std::flush;
+		text_modified = false;
 	}
-
-private:
+	// 各类属性
 	std::size_t text_area_width()
 	{
 		return pic->get_width() - render_border - 5;
@@ -96,13 +119,14 @@ private:
 	{
 		return file_buffer[text_offset_y()];
 	}
-	void save_file(const std::string &path)
+	// 工具
+	void force_refresh()
 	{
-		std::ofstream out(path);
-		for (std::size_t idx = 0; idx < file_buffer.size() - 1; ++idx)
-			out << file_buffer[idx] << std::endl;
-		out << file_buffer[file_buffer.size() - 1] << std::flush;
-		text_modified = false;
+		cursor_count = 59;
+	}
+	bool is_validate_path_char(int ch)
+	{
+		return std::isalnum(ch) || ch == ' ' || ch == '\\' || ch == '/';
 	}
 	void adjust_cursor(std::size_t x_offset)
 	{
@@ -122,6 +146,46 @@ private:
 				;
 		}
 	}
+	// 文本查找
+	void reset_find()
+	{
+		find_x = find_y = 0;
+		found_text = false;
+		expect_txt = false;
+	}
+	void find()
+	{
+		while (find_y < file_buffer.size()) {
+			auto &line = file_buffer[find_y];
+			auto pos = line.find(find_target, expect_txt ? find_x + 1 : 0);
+			if (pos != std::string::npos) {
+				if (!expect_txt || pos > find_x) {
+					found_text = true;
+					expect_txt = true;
+					find_x = pos;
+					break;
+				}
+			}
+			expect_txt = false;
+			find_x = 0;
+			++find_y;
+		}
+		if (found_text) {
+			if (find_y == file_buffer.size()) {
+				reset_find();
+				find();
+			}
+			cursor_x = render_offx = 0;
+			cursor_y = 0;
+			if (find_y < file_buffer.size() - text_area_height())
+				render_offy = find_y > 4 ? find_y - 4 : 0;
+			else
+				render_offy = file_buffer.size() - text_area_height();
+			if (find_x + find_target.size() > text_area_width())
+				render_offx = find_x + find_target.size() - text_area_width() + 1;
+		}
+	}
+	// 键盘事件处理
 	void key_up()
 	{
 		if (cursor_y > 0)
@@ -171,6 +235,7 @@ private:
 			++render_offy;
 		}
 	}
+	// 事件响应
 	bool window_resized()
 	{
 		if (last_win_width != pic->get_width() || last_win_height != pic->get_height()) {
@@ -258,7 +323,7 @@ private:
 					}
 					else {
 						file_buffer.clear();
-						load(file_path);
+						load_file(file_path);
 					}
 					break;
 				case keymap::key_quit:
@@ -300,6 +365,7 @@ private:
 		else
 			return false;
 	}
+	// 渲染函数
 	void render_linenum()
 	{
 		render_border = std::to_string(file_buffer.size()).size();
@@ -343,10 +409,7 @@ private:
 		render_linenum();
 		render_text();
 	}
-	void force_refresh()
-	{
-		cursor_count = 59;
-	}
+	// 处理挂起任务
 	void exec_await_process()
 	{
 		switch (await_process) {
@@ -358,11 +421,12 @@ private:
 		case await_process_type::reload:
 			text_modified = false;
 			file_buffer.clear();
-			load(file_path);
+			load_file(file_path);
 			break;
 		}
 		await_process = await_process_type::null;
 	}
+	// 运行状态实现
 	void run_normal()
 	{
 		darwin::runtime.fit_drawable();
@@ -403,10 +467,6 @@ private:
 		}
 		darwin::runtime.update_drawable();
 	}
-	bool is_validate_path_char(int ch)
-	{
-		return std::isalnum(ch) || ch == ' ' || ch == '\\' || ch == '/';
-	}
 	void run_unsaved_confirm()
 	{
 		darwin::runtime.fit_drawable();
@@ -433,44 +493,6 @@ private:
 			}
 		}
 		darwin::runtime.update_drawable();
-	}
-	void reset_find()
-	{
-		find_x = find_y = 0;
-		found_text = false;
-		expect_txt = false;
-	}
-	void find()
-	{
-		while (find_y < file_buffer.size()) {
-			auto &line = file_buffer[find_y];
-			auto pos = line.find(find_target, expect_txt ? find_x + 1 : 0);
-			if (pos != std::string::npos) {
-				if (!expect_txt || pos > find_x) {
-					found_text = true;
-					expect_txt = true;
-					find_x = pos;
-					break;
-				}
-			}
-			expect_txt = false;
-			find_x = 0;
-			++find_y;
-		}
-		if (found_text) {
-			if (find_y == file_buffer.size()) {
-				reset_find();
-				find();
-			}
-			cursor_x = render_offx = 0;
-			cursor_y = 0;
-			if (find_y < file_buffer.size() - text_area_height())
-				render_offy = find_y > 4 ? find_y - 4 : 0;
-			else
-				render_offy = file_buffer.size() - text_area_height();
-			if (find_x + find_target.size() > text_area_width())
-				render_offx = find_x + find_target.size() - text_area_width() + 1;
-		}
 	}
 	void run_find_setup()
 	{
@@ -596,8 +618,11 @@ private:
 	}
 
 public:
-	void run()
+	// 主函数
+	void run(const std::string& path)
 	{
+		file_path = path;
+		load_file(file_path);
 		darwin::runtime.load("./darwin.module");
 		darwin::runtime.fit_drawable();
 		pic = darwin::runtime.get_drawable();
@@ -634,12 +659,12 @@ public:
 		}
 	}
 };
-
+// 启动进程
 int main(int argc, char **argv)
 {
 	if (argc != 2)
 		return -1;
-	texteditor editor(argv[1]);
-	editor.run();
+	texteditor editor;
+	editor.run(argv[1]);
 	return 0;
 }
