@@ -29,34 +29,34 @@ namespace keymap {
 } // namespace keymap
 // 文本编辑器类
 class texteditor final {
-// 渲染器属性
+	// 渲染器属性
 	std::size_t render_border = 0, render_offx = 0, render_offy = 0;
-// 光标属性
+	// 光标属性
 	std::size_t cursor_count = 0, cursor_x = 0, cursor_y = 0;
-// 窗口属性
+	// 窗口属性
 	std::size_t last_win_width = 0, last_win_height = 0;
-// 文本 Buffer
+	// 文本 Buffer
 	std::vector<std::string> file_buffer;
-// 查找高亮属性
+	// 查找高亮属性
 	std::size_t find_x = 0, find_y = 0;
-// 帧 Buffer
+	// 帧 Buffer
 	darwin::drawable *pic = nullptr;
-// 状态
+	// 状态
 	bool text_modified = false;
 	bool insert_mode = false;
 	bool found_text = false;
 	bool expect_txt = false;
-// 字符 Buffer
+	// 字符 Buffer
 	std::string find_target;
 	std::string char_buffer;
 	std::string file_path;
-// 挂起任务
+	// 挂起任务
 	enum class await_process_type {
 		null,
 		quit,
 		reload
 	} await_process = await_process_type::null;
-// 编辑器状态
+	// 编辑器状态
 	enum class editor_status_type {
 		null,
 		asking,
@@ -69,12 +69,13 @@ class texteditor final {
 	} editor_status = editor_status_type::null;
 
 public:
-// Tab 缩进宽度
+	// Tab 缩进宽度
 	unsigned int tab_indent = 4;
-// 构造函数 & 赋值函数
+	// 构造函数 & 赋值函数
 	texteditor() = default;
-	texteditor(const texteditor&) = delete;
-	texteditor &operator=(const texteditor&) = delete;
+	texteditor(const texteditor &) = delete;
+	texteditor &operator=(const texteditor &) = delete;
+
 private:
 	// 文件操作
 	void load_file(const std::string &path)
@@ -260,7 +261,8 @@ private:
 				int key = darwin::runtime.get_kb_hit();
 				if (key != keymap::key_esc) {
 					auto &line = current_line();
-					if (key == keymap::key_enter) {
+					switch (key) {
+					case keymap::key_enter: {
 						auto line_current = line.substr(0, text_offset_x());
 						auto line_next = line.substr(text_offset_x());
 						line = line_current;
@@ -268,8 +270,9 @@ private:
 						key_down();
 						cursor_x = render_offx = 0;
 						text_modified = true;
+						break;
 					}
-					else if (key == keymap::key_delete) {
+					case keymap::key_delete:
 						if (cursor_x + render_offx == 0) {
 							if (text_offset_y() != 0) {
 								key_up();
@@ -286,11 +289,17 @@ private:
 								text_modified = true;
 							}
 						}
-					}
-					else {
-						line.insert(line.begin() + text_offset_x(), key);
-						key_right();
+						break;
+					case keymap::key_tab:
+						line.insert(text_offset_x(), std::string(tab_indent, ' '));
+						adjust_cursor(text_offset_x() + tab_indent);
 						text_modified = true;
+						break;
+					default:
+						line.insert(line.begin() + text_offset_x(), key);
+						adjust_cursor(text_offset_x() + 1);
+						text_modified = true;
+						break;
 					}
 				}
 				else
@@ -619,7 +628,7 @@ private:
 
 public:
 	// 主函数
-	void run(const std::string& path)
+	void run(const std::string &path)
 	{
 		file_path = path;
 		load_file(file_path);
