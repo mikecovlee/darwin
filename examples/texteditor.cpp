@@ -124,7 +124,6 @@ private:
 	}
 	void key_up()
 	{
-		cursor_count = 0;
 		if (cursor_y > 0)
 			--cursor_y;
 		else if (render_offy > 0)
@@ -134,7 +133,6 @@ private:
 	}
 	void key_down()
 	{
-		cursor_count = 0;
 		if (cursor_y < text_area_height() - 1)
 			++cursor_y;
 		else if (render_offy + text_area_height() < file_buffer.size())
@@ -144,7 +142,6 @@ private:
 	}
 	void key_left()
 	{
-		cursor_count = 0;
 		if (cursor_x > 0)
 			--cursor_x;
 		else if (render_offx > 0)
@@ -159,7 +156,6 @@ private:
 	}
 	void key_right()
 	{
-		cursor_count = 0;
 		if (cursor_x < text_area_width()) {
 			if (text_offset_x() < current_line().size())
 				++cursor_x;
@@ -194,10 +190,10 @@ private:
 		if (await_process != await_process_type::null)
 			return true;
 		if (darwin::runtime.is_kb_hit()) {
+			cursor_count = 0;
 			if (insert_mode) {
 				int key = darwin::runtime.get_kb_hit();
 				if (key != keymap::key_esc) {
-					text_modified = true;
 					auto &line = current_line();
 					if (key == keymap::key_enter) {
 						auto line_current = line.substr(0, text_offset_x());
@@ -206,24 +202,30 @@ private:
 						file_buffer.insert(file_buffer.begin() + text_offset_y() + 1, line_next);
 						key_down();
 						cursor_x = render_offx = 0;
+						text_modified = true;
 					}
 					else if (key == keymap::key_delete) {
 						if (cursor_x + render_offx == 0) {
-							key_up();
-							adjust_cursor(current_line().size());
-							current_line().append(line);
-							file_buffer.erase(file_buffer.begin() + text_offset_y() + 1);
+							if (text_offset_y() != 0) {
+								key_up();
+								adjust_cursor(current_line().size());
+								current_line().append(line);
+								file_buffer.erase(file_buffer.begin() + text_offset_y() + 1);
+								text_modified = true;
+							}
 						}
 						else {
 							if (line.size() > 0) {
 								line.erase(text_offset_x() - 1, 1);
 								key_left();
+								text_modified = true;
 							}
 						}
 					}
 					else {
 						line.insert(line.begin() + text_offset_x(), key);
 						key_right();
+						text_modified = true;
 					}
 				}
 				else
