@@ -74,7 +74,7 @@ public:
 // 构造函数 & 赋值函数
 	texteditor() = default;
 	texteditor(const texteditor&) = delete;
-	texteditor &operator(const texteditor&) = delete;
+	texteditor &operator=(const texteditor&) = delete;
 private:
 	// 文件操作
 	void load_file(const std::string &path)
